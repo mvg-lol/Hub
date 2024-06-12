@@ -1,4 +1,4 @@
-# https://MVG.lol
+# [MVG.lol](https://mvg.lol)
 
 ## Hub
 
