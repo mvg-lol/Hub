@@ -7,8 +7,7 @@
 ## 2
 
 - meter o site bonito
-- fazer uma melhor descrição do site
--- estava a pensar tipo universidade acabou mas temos sempre aqui o MVG pra nos juntar?? tipo algo assim ns, podiamos fazer ganda hub aqui com animações com jquery, fazer mesmo ganda site.
+- fazer uma melhor descrição do site / definir objetivos pro site
 - meter os jogos de projeto a dar.
 - meter algumas funcionalidades fixes e engraçadas.
 
