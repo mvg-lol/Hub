@@ -14,6 +14,7 @@
 ### 3
 
 - comprar o ricadinho.com/ricadinho.eu ou outro e o resto dos sites
+- meter o meu site antigo no mvg.lol/RICADINHO
 
 #### Ideias
 
