@@ -16,6 +16,9 @@
 - meter o meu site antigo no mvg.lol/RICADINHO
 - Quando os sites tiverem todos online fazer o hub tipo o de skywars do hypixel, isto pode ser bué complicado mas tava a pensar fazer um jogo em que andavas pelo hub e podias ir visitar cada um dos nossos sites
 
+#### medias
+- fazer gif com uma claque de futebol mas em vez de ter o nome do clube diz MVG
+
 #### Ideias
 
 - fazer uma app tele em flutter?
