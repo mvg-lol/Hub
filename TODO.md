@@ -1,6 +1,5 @@
 # 1
 
-- arranjar utilidade para o MVG
 - criar bd para users e admin (CRUD)
 - Fazer login
 
@@ -15,6 +14,7 @@
 
 - comprar o ricadinho.com/ricadinho.eu ou outro e o resto dos sites
 - meter o meu site antigo no mvg.lol/RICADINHO
+- Quando os sites tiverem todos online fazer o hub tipo o de skywars do hypixel, isto pode ser bué complicado mas tava a pensar fazer um jogo em que andavas pelo hub e podias ir visitar cada um dos nossos sites
 
 #### Ideias
 
