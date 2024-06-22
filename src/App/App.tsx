@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import './App.css'
+import { useNavigate } from 'react-router';
 
 function alterarBG() {
   const num: number = Math.floor(Math.random() * 100080000)
@@ -11,6 +12,11 @@ function alterarBG() {
 function AppUnMemo() {
   const lineStyle: React.CSSProperties = {borderTop:"2px solid black"};
   alterarBG();
+  const navigate = useNavigate();
+  function navigateThree(){
+    navigate('/three');
+  }
+
   return (
       <div style={{backgroundImage: "/frigorifico.png"}}>
         <br/>
@@ -41,6 +47,7 @@ function AppUnMemo() {
         </h2>
         <br/>
         <hr style={lineStyle}/>
+        <button type='button' onClick={navigateThree}>Cubo</button>
       </div>
   )
 }
