@@ -9,6 +9,7 @@
 - fazer uma melhor descrição do site / definir objetivos pro site
 - meter os jogos de projeto a dar.
 - meter algumas funcionalidades fixes e engraçadas.
+- meter um redirect de em cada site para fazer um loop de redirects (1 redirect por site)
 
 ### 3
 
