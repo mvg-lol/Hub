@@ -2,6 +2,7 @@
 
 - criar bd para users e admin (CRUD)
 - Fazer login
+- Fazer pagina para utilizadores clicarem num botao a dizer que cagaram
 
 ## 2
 
