@@ -18,7 +18,7 @@ function AppUnMemo() {
   }
 
   return (
-      <div style={{backgroundImage: "/frigorifico.png"}}>
+      <div>
         <br/>
         <h1>
           <a style={{color:"goldenrod"}} href="https://github.com/mvg-lol">MVG</a>
