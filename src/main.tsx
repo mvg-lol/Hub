@@ -5,8 +5,9 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import './index.css'
-import App from './App/App.tsx'
-import Three from './Threejs/Threejs.tsx';
+import App from './Components/App/App.tsx'
+import Three from './Components/Threejs/Threejs.tsx';
+import Login from './Components/Login/Login.tsx';
 
 const router = createHashRouter([
   {
@@ -16,6 +17,11 @@ const router = createHashRouter([
   {
     path: "/three",
     element: <Three/>,
+  },
+
+  {
+    path: "/login",
+    element: <Login/>,
   },
 ]);
 

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import './App.css'
 import { useNavigate } from 'react-router';
 
@@ -13,17 +13,19 @@ function AppUnMemo() {
   const lineStyle: React.CSSProperties = {borderTop:"2px solid black"};
   alterarBG();
   const navigate = useNavigate();
-  function navigateThree(){
+  function navigateThree() {
     navigate('/three');
   }
-
+  function navigateLogin() {
+    navigate('/login')
+  }
+  const [numeroDeVezesClicado, setNumeroDeVezesClicado] = useState(0)
   return (
       <div>
         <br/>
         <h1>
           <a style={{color:"goldenrod"}} href="https://github.com/mvg-lol">MVG</a>
         </h1>
-        <h1>testing my nuts</h1>
         <br/>
         <br/>
         <hr style={lineStyle}/>
@@ -49,6 +51,7 @@ function AppUnMemo() {
         <br/>
         <hr style={lineStyle}/>
         <button type='button' onClick={navigateThree}>Cubo</button>
+        <div style={{width:500, height:500}} onClick={()=> {if (numeroDeVezesClicado <=5) setNumeroDeVezesClicado(numeroDeVezesClicado+1); else navigateLogin()}}></div>
       </div>
   )
 }
