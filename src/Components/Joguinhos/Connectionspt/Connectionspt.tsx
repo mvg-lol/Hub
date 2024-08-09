@@ -1,8 +1,11 @@
 import './Connectionspt.css'
 
+//@ts-expect-error todo impl unused
 import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
+//@ts-expect-error todo impl unused
 import myFirebase from '../../../common/firebase'
+//@ts-expect-error react scale text não tem @types
 import ScaleText from 'react-scale-text'
 
 type Category = {
