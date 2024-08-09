@@ -7,7 +7,7 @@ import { useState } from 'react';
 import firebaseStuff from '../../common/firebase'
 
 export default function Login(): JSX.Element {
-    const [isCriarConta, setCriarConta] = useState(false)
+    const [isCriarConta, setIsCriarConta] = useState(false)
     const [password, setPassword] = useState('')
     const [email, setEmail] = useState('')
     const criarContaFn = () => {
@@ -33,7 +33,7 @@ export default function Login(): JSX.Element {
     }
 
     return (<>
-        <p onClick={()=>setCriarConta(!isCriarConta)} style={{cursor:'pointer'}}>
+        <p onClick={()=>setIsCriarConta(!isCriarConta)} style={{cursor:'pointer'}}>
             {isCriarConta ? 'Criar conta' : 'Login'}
         </p>
         <button onClick={()=>console.log(password, email, isCriarConta)}>teste state</button>

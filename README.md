@@ -1,3 +1,13 @@
+
+# [MVG.lol](https://mvg.lol)
+
+## Hub
+
+Este site vai funcionar como um hub para todos os nossos sites
+
+## Como correr/desenvolver
+
+Correr o comando `npm run dev`, para fazer deploy apenas dar commit
 ```
           _____                    _____                        _____          
          /\    \                  /\    \                      /\    \         
@@ -21,13 +31,3 @@
         \::/    /                                             \::/____/        
          \/____/                                                           
 ```
-
-# [MVG.lol](https://mvg.lol)
-
-## Hub
-
-Este site vai funcionar como um hub para todos os nossos sites
-
-## Como correr/desenvolver
-
-Correr o comando `npm run dev`, para fazer deploy apenas dar commit

@@ -1,0 +1,121 @@
+.word {
+    --word-size: 100px;
+    width: var(--word-size);
+    height: var(--word-size);
+    background-color: bisque;
+    border-radius: 10px;
+    box-sizing: border-box;
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+    /*font-size: 1vw; 1vw é 1% da width do browser
+    font-size: calc(3px + 1vw);*/
+    /*word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+    hyphenate-character: '-';
+    hyphens: manual;*/
+    cursor:pointer;
+}
+.animateClick {
+    --animation-time: 0.35s;
+    --animation-description: bounce var(--animation-time) cubic-bezier(.71,.89,1,1.55);
+    -webkit-animation: var(--animation-description);
+    animation: var(--animation-description);
+}
+@keyframes bounce {
+    0% {
+        transform: scale(1);
+    }
+    60% {
+        transform: scale(0.93);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.scaletext-wrapper {
+    text-align: center;
+    justify-content: center;
+    align-content: center;
+}
+.animateClick.teste {
+    position: absolute;
+    top:500px;
+    animation: var(--animation-description) infinite;
+}
+
+.wordGuess {
+    --word-size: 104.7px; /*não usamos 100px pois a gap definida no estilo tabela das palavras desalinha as coisas*/
+    width: calc(var(--word-size)*4);
+    height: 100px;
+    border-radius: 10px;
+    text-align: center;
+}
+.gameTableParent {
+    --percentage:35%;
+    --right-percentage: calc(100% - var(--percentage));
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    display: grid;
+}
+
+.gameTable {
+    display: grid;
+    width: 400px;
+    grid-template-columns: repeat(4, 1fr);
+    align-self: center;
+    justify-self: center;
+    gap: 6px;
+}
+.gameTableForGuess {
+    display: grid;
+    width: 400px;
+    grid-template-columns: repeat(4, 1fr);
+    align-self: center;
+    justify-self: center;
+    gap: 6px;
+}
+
+.connectionButton {
+    background-color: black;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    border-style: none;
+    font-size:14px;
+    cursor:pointer
+}
+.connectionButton:disabled {
+    background-color: gainsboro;
+    color: black;
+    cursor: default;
+}
+
+.animateShake {
+    --animation-time: 0.45s;
+    --animation-description: shake var(--animation-time) linear;
+    -webkit-animation: var(--animation-description);
+    animation: var(--animation-description) infinite;
+}
+
+@keyframes shake {
+    0% {
+        transform: translate(0px);
+    }
+    25% {
+        transform: translate(-5px);
+    }
+    50% {
+        transform: translate(5px);
+    }
+    75% {
+        transform: translate(-5px);
+    }
+    100% {
+        transform: translate(0px);
+    }
+}

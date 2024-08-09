@@ -19,6 +19,9 @@ function AppUnMemo() {
   function navigateLogin() {
     navigate('/login')
   }
+  function navigateJoguinhos() {
+    navigate('/joguinhos')
+  }
   const [numeroDeVezesClicado, setNumeroDeVezesClicado] = useState(0)
   return (
       <div>
@@ -51,6 +54,7 @@ function AppUnMemo() {
         <br/>
         <hr style={lineStyle}/>
         <button type='button' onClick={navigateThree}>Cubo</button>
+        <button type='button' onClick={navigateJoguinhos}>Joguinhos</button>
         <div style={{width:500, height:500}} onClick={()=> {if (numeroDeVezesClicado <=5) setNumeroDeVezesClicado(numeroDeVezesClicado+1); else navigateLogin()}}></div>
       </div>
   )
