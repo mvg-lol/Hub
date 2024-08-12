@@ -41,7 +41,7 @@ function AppUnMemo() {
         </h2>
         <br/>
         <h2>
-          <a style={{color:"#9b4f96"}} href="https://deltarune.com/sighting/">RICADINHO ( COMING SOON ON https://RICADINHO.com/ ) </a>
+          <a style={{color:"#9b4f96"}} href="https://ricadinho.com/">RICADINHO ( GRAND OPENING!!!! )</a>
         </h2>
         <br/>
         <h2>
