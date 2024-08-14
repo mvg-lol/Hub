@@ -78,6 +78,7 @@
     align-self: center;
     justify-self: center;
     gap: 6px;
+    padding-bottom: 6px;
 }
 
 .connectionButton {

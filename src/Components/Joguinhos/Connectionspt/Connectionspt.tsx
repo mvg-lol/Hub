@@ -1,23 +1,25 @@
 import './Connectionspt.css'
-
-//@ts-expect-error todo impl unused
-import { doc, getDoc } from 'firebase/firestore'
+import { collection, doc, DocumentData, documentId, FirestoreDataConverter, getDoc, getDocs, orderBy, query, QueryDocumentSnapshot, setDoc, SnapshotOptions } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
-//@ts-expect-error todo impl unused
 import myFirebase from '../../../common/firebase'
 //@ts-expect-error react scale text não tem @types
 import ScaleText from 'react-scale-text'
+import { User } from 'firebase/auth'
+import 'firebase/firestore'
 
-type Category = {
-    title: string,
-    words: string[]
+interface Category {
+    title: string;
+    words: string[];
 }
-type FirebaseWords = {
+interface FirebaseWords {
     yellow: Category,
     green: Category,
     blue: Category,
     purple: Category,
-    date: number
+}
+interface FirebaseWordsWithDate{
+    date: string,
+    data: FirebaseWords
 }
 enum Color {
     Yellow = '#FBEC72',
@@ -40,6 +42,26 @@ type GuessMade = {
 enum AnimationTypes {
     Shake = 'animateShake',
     Click = 'animateClick',
+}
+
+const firebaseWordsConverter: FirestoreDataConverter<FirebaseWords, FirebaseWords> = {
+    toFirestore(modelObject: FirebaseWords): FirebaseWords {
+        return {
+            yellow: modelObject.yellow,
+            purple: modelObject.purple,
+            blue: modelObject.blue,
+            green: modelObject.green,
+        }
+    },
+    fromFirestore(snapshot: QueryDocumentSnapshot<DocumentData, DocumentData>, options?: SnapshotOptions): FirebaseWords {
+        const data = snapshot.data(options)
+        return {
+            yellow: data.yellow,
+            purple: data.purple,
+            green: data.green,
+            blue: data.blue,
+        }
+    }
 }
 
 function shuffleArray(array: unknown[], returnNewArray: boolean = false) {
@@ -78,14 +100,15 @@ export default function Connectionspt(): JSX.Element {
     const defaultWordColor = 'bisque'
     const onHoverWordColor = 'aliceblue'
     const [game, setGame] = useState<SelectedWord[]>()
+    const [userMartinho, setUserMartinho] = useState<User|null>(null)
     const [firebaseWords, setFirebaseWords] = useState<FirebaseWords>()
     useEffect(() => {
         async function getConnections() {
-            //TODO FIREBASE
-            //const docRef = doc(myFirebase.db, "connections", "connection")
-            //const docSnap = await getDoc(docRef)
-            //console.log(docSnap.data())
-            const game: FirebaseWords = {
+            const today = /*true ? Date.UTC(2024,7,7).toString() :*/ new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-");
+            const docRef = doc(myFirebase.db, "connections", today)
+            const docSnap = await getDoc(docRef)
+            console.log(docSnap.data(), docSnap.exists(), today)
+            let game: FirebaseWords = {
                 green: {
                     title: "Sinónimos de Lindo",
                     words: ['bonito', 'elegante', 'deslumbrante', 'vistoso']
@@ -101,15 +124,25 @@ export default function Connectionspt(): JSX.Element {
                 yellow: {
                     title: 'Parabenizar',
                     words: ['congratular', 'felicitar', 'saudar', 'salvar']
-                },
-                date: Date.now()
+                }
             };
+            if (docSnap.exists()){
+                game = docSnap.data() as FirebaseWords
+            }
             setFirebaseWords(game);
             setGame(getScrambledWordsFromGame(game))
         }
         getConnections()
         console.log(game)
+        myFirebase.auth.onAuthStateChanged((user) => {
+            if (user !== null && myFirebase.userIsMartinho(user.uid)) {
+                setUserMartinho(user)
+            } else {
+                setUserMartinho(null)
+            }
+        });
     }, [])
+    
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
     const [numberOfGuessesLeft, setNumberOfGuessesLeft] = useState(4)
     const [guessesMade, setGuessesMade] = useState<GuessMade[]>([])
@@ -164,7 +197,7 @@ export default function Connectionspt(): JSX.Element {
     const saveCurrentGuessesToLocalStorageOrDB = () => {
         {
             //save to localstorage
-            localStorage.setItem(`connection${firebaseWords?.date}`, JSON.stringify(guessesMade))
+            localStorage.setItem(`connection${new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")}`, JSON.stringify(guessesMade))
         }
         {
             //save to firebase
@@ -283,30 +316,174 @@ export default function Connectionspt(): JSX.Element {
     }
 
     return (
-        <div>
-            <div className='gameTableParent'>
-            <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
-            <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
-                {
-                    guessesMade.length === 0 ? null
-                        :
-                        guessesMade.map(convertGuessToHTML)
-                }
-                <div className='gameTable'>
+            userMartinho !== null ? 
+            
+            <ScriptInserirConnections martinho={userMartinho}/> : 
+            
+            <div>
+                <div className='gameTableParent'>
+                <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
+                <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
                     {
-                        game === undefined && guessesMade.length === 0 ? <h1>LOADING</h1>
+                        guessesMade.length === 0 ? null
                             :
-                            game === undefined ? null : game.map(convertSelectedWordToTile)
+                            guessesMade.map(convertGuessToHTML)
                     }
+                    <div className='gameTable'>
+                        {
+                            game === undefined && guessesMade.length === 0 ? <h1>LOADING</h1>
+                                :
+                                game === undefined ? null : game.map(convertSelectedWordToTile)
+                        }
+                    </div>
+                    <p style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginTop: '16px', marginBottom: '12px' }}>Tentativas restantes: {numberOfGuessesLeft}</p>
+                    <div id="divBotoesConnections" style={{ justifySelf: 'center', paddingLeft: '1.5%' }}>
+                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (selectedWords.length === 4) performPostEvaluateLogic(evaluateSubmission()) }} disabled={selectedWords.length !== 4} >Submeter</button>&nbsp;
+                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); removeSelection() }} disabled={selectedWords.length === 0}>Remover seleção</button>&nbsp;
+                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game!, true)! as SelectedWord[]) }}>Shuffle</button>
+                    </div>
+                    <div className='animateClick teste'>swag</div>
                 </div>
-                <p style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginTop: '16px', marginBottom: '12px' }}>Tentativas restantes: {numberOfGuessesLeft}</p>
-                <div id="divBotoesConnections" style={{ justifySelf: 'center', paddingLeft: '1.5%' }}>
-                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (selectedWords.length === 4) performPostEvaluateLogic(evaluateSubmission()) }} disabled={selectedWords.length !== 4} >Submeter</button>&nbsp;
-                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); removeSelection() }} disabled={selectedWords.length === 0}>Remover seleção</button>&nbsp;
-                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game!, true)! as SelectedWord[]) }}>Shuffle</button>
-                </div>
-                <div className='animateClick teste'>swag</div>
             </div>
-        </div>
+    )
+}
+
+
+
+function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
+    const [yellowWords, setYellowWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
+    const [blueWords, setBlueWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
+    const [greenWords, setGreenWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
+    const [purpleWords, setPurpleWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
+    const [errorString, setErrorString] = useState<string>('')
+    const [temVirgula, setTemVirgula] = useState(true)
+    const [customDate, setCustomDate] = useState<string>('')
+
+    const firebaseWordsBuilder = (): FirebaseWords => {
+        return {
+            yellow: yellowWords,
+            blue: blueWords,
+            green: greenWords,
+            purple: purpleWords
+        }
+    }
+
+    const submitFunction = async () => {
+        if (yellowWords.words.length !== 4 && greenWords.words.length !== 4 && blueWords.words.length !== 4 && purpleWords.words.length !== 4) {
+            setErrorString(`Alguma lista sem 4 elementos exatos: Yellow: ${yellowWords.words.length} Green: ${greenWords.words.length} Blue: ${blueWords.words.length} Purple: ${purpleWords.words.length}`)
+            return
+        }
+        if (yellowWords.title.length === 0 && greenWords.title.length === 0 && blueWords.title.length === 0 && purpleWords.title.length === 0) {
+            setErrorString(`Alguma lista não tem titulo: Yellow: ${yellowWords.title.length} Green: ${greenWords.title.length} Blue: ${blueWords.title.length} Purple: ${purpleWords.title.length}`)
+            return
+        }
+        
+        if (myFirebase.userIsMartinho(props.martinho.uid)) {
+            let cdate = customDate
+            if (cdate.length !== 10) {
+                cdate = (await getLatestConnection()).date
+                console.log(cdate)
+            }
+            const data = firebaseWordsBuilder()
+            await setDoc(doc(myFirebase.db, "connections", cdate).withConverter(firebaseWordsConverter), data)
+                .then(()=>
+                    setErrorString("Sucesso")
+                )
+                .catch(err=>setErrorString(err.toString()))
+
+        }
+    }
+    const newDateFromArray = (arr:number[]):Date => new Date(arr[2], arr[1]-1, arr[0])
+    const stringDateToDate = (date:string):Date => newDateFromArray(date.split("-").map(val => parseInt(val)))
+    const getLatestConnection = async ():Promise<FirebaseWordsWithDate> => {
+        const connectionsCol = collection(myFirebase.db, "connections").withConverter(firebaseWordsConverter);
+        const q = query(connectionsCol, orderBy(documentId()))
+        const qsnapshot = await getDocs(q)
+        let arr:FirebaseWordsWithDate[] = []
+        qsnapshot.forEach(val=>{ if(val.id.indexOf("-")>=0){ arr.push({date:val.id, data:val.data()})}})
+        arr = arr.sort((a,b)=>{
+            const datea = stringDateToDate(a.date)
+            const dateb = stringDateToDate(b.date)
+            return dateb.getTime() - datea.getTime()
+        }).filter(val => !Number.isNaN(val.date)).filter((_val,index)=> index === 0)
+        const date = stringDateToDate(arr[0].date)
+        date.setDate(date.getDate() + 1)
+        return {
+            data: arr[0].data,
+            date: date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")
+        }
+    }
+
+    return (
+        <>
+            <fieldset>
+                <legend>Inserir novo connection</legend>
+                <input type='checkbox' id='temvirgulacheckbox' checked={temVirgula} onChange={()=>setTemVirgula(!temVirgula)}></input>
+                <label htmlFor='temvirgulacheckbox'>Tem Vírgula?</label><br></br>
+                {
+                    Object.keys(Color).map((currColor) => {
+                        const currColorValue = Color[currColor as keyof typeof Color]
+                        let stateFunction: React.Dispatch<React.SetStateAction<Category>>;
+                        let category: Category
+                        switch(currColorValue) {
+                            case Color.Yellow: stateFunction = setYellowWords; category = yellowWords; break;
+                            case Color.Blue: stateFunction = setBlueWords; category = blueWords; break;
+                            case Color.Green: stateFunction = setGreenWords; category = greenWords; break;
+                            case Color.Purple: stateFunction = setPurpleWords; category = purpleWords; break;
+                        }
+                        return (
+                        <div key={currColor}>
+                            <label htmlFor={currColor}>{currColor}&nbsp;&nbsp;</label>
+                            <input id={currColor} type="text" value={category.words.join(temVirgula ? ',' : ' ')} onChange={(ev) => {
+                                stateFunction({
+                                    title: category.title, 
+                                    words: ev.target.value
+                                        .split(temVirgula ? ',' : ' ')
+                                        .filter(str => str.length > 0)
+                                        .map(str => str.trim())
+                                    })
+                                
+                            }}></input>
+                            <ul>
+                                <li>
+                                    <label htmlFor={currColor + ' Title'}>{currColor + ' Title'}&nbsp;&nbsp;</label>
+                                    <input id={currColor + ' Title'} value={category.title} type="text" onChange={(ev) => {
+                                        stateFunction({title:ev.target.value.trim(), words: category.words})
+                                    }}></input>
+                                </li>
+                            </ul>
+                        </div>)
+                    })
+                }
+                <label htmlFor="customdate">Custom date: </label>
+                <input type="date" step={1} id="customdate" name="customDate" onChange={(ev)=>{
+                        try {
+                            const parsedDateNumber = Date.parse(ev.target.value)
+                            const parsedDate = new Date(parsedDateNumber)
+                            const today = new Date(Date.now())
+                            console.log(today.getDate(), parsedDate.getDate(), parsedDate.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-"))
+                            if (parsedDate.getFullYear() >= today.getFullYear() && parsedDate.getMonth() >= today.getMonth() && parsedDate.getDay() >= today.getDay())
+                                setCustomDate(parsedDate.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-"))
+                            else setCustomDate('')
+                        } catch (error) {
+                            setCustomDate('')
+                        }
+                    }}
+                /> <label htmlFor="customdate"><u>Colocar uma data anterior à de hoje {new Date(Date.now()).toISOString().split("T")[0]}</u> ou <u>clicar no botao para colocar data automaticamente</u> ou <u>nao mexer nisto</u> (se o input nao estiver dd/mm/aaaa é do teu pc/browser)</label>
+                <br></br>
+                <button onClick={()=>submitFunction()}>Submeter</button>
+                <button onClick={()=>setErrorString('')}>Limpar Erro</button>
+                <button onClick={()=>console.log(customDate)}>teste</button>
+                <button onClick={()=>{(document.getElementById('customdate') as HTMLInputElement).value = ''; setCustomDate('')}}>Resetar data escolhida</button>
+            </fieldset>
+            {
+                errorString.length > 0 ?
+                <fieldset style={{color:errorString === 'Sucesso' ? '' : 'white', backgroundColor:errorString === 'Sucesso' ? 'green' : 'red', fontWeight:'bold'}}>
+                    <legend style={{backgroundColor:errorString === 'Sucesso' ? 'green' : 'red'}}>{errorString === 'Sucesso' ? errorString : 'ERRO:'}</legend>
+                    {errorString === 'Sucesso' ? null : <p>{errorString}</p>}
+                </fieldset>
+            : null
+            }
+        </>
     )
 }
