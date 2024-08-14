@@ -6,6 +6,7 @@ import myFirebase from '../../../common/firebase'
 import ScaleText from 'react-scale-text'
 import { User } from 'firebase/auth'
 import 'firebase/firestore'
+import toast, { Toaster } from 'react-hot-toast'
 
 interface Category {
     title: string;
@@ -189,9 +190,14 @@ export default function Connectionspt(): JSX.Element {
     }
 
     const evaluateSubmission = () => {
-        const colorOfFirstWord = selectedWords[0].word.color
-        const wordsOfTheSameColorAsFirst = selectedWords.filter(val => val.word.color === colorOfFirstWord);
-        return wordsOfTheSameColorAsFirst.length === 4
+        //const colorOfFirstWord = selectedWords[0].word.color
+        //const wordsOfTheSameColorAsFirst = selectedWords.filter(val => val.word.color === colorOfFirstWord);
+        const cores: {[key:string]:number} = {}
+        selectedWords.forEach(val=>cores[val.word.color] !== undefined ? cores[val.word.color] = cores[val.word.color] + 1 : cores[val.word.color] = 1)
+        const keys = Object.keys(cores)
+        if (keys.length === 2 && (cores[keys[0]] === 1 || cores[keys[0]] === 3)) 
+            toast('One away!', {duration:3000, position:'top-center', icon:'🤏'})
+        return Object.keys(cores).length === 1
     }
 
     const saveCurrentGuessesToLocalStorageOrDB = () => {
@@ -200,6 +206,7 @@ export default function Connectionspt(): JSX.Element {
             localStorage.setItem(`connection${new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")}`, JSON.stringify(guessesMade))
         }
         {
+            //TODO GUARDAR NO USER NO FIREBASE
             //save to firebase
             console.error("TODO FIREBASE IMPL")
         }
@@ -321,6 +328,7 @@ export default function Connectionspt(): JSX.Element {
             <ScriptInserirConnections martinho={userMartinho}/> : 
             
             <div>
+                <Toaster/>
                 <div className='gameTableParent'>
                 <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
                 <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
