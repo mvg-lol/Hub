@@ -1,22 +1,25 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, UserCredential, GithubAuthProvider } from 'firebase/auth';
 import './Login.css'
-//import firebase from 'firebase/compat/app';
-//import * as firebaseui from 'firebaseui'
 import 'firebaseui/dist/firebaseui.css'
-import { useState } from 'react';
-import firebaseStuff from '../../common/firebase'
-import { GithubAuthProvider } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import myFirebase from '../../common/firebase';
 
 const githubProvider = new GithubAuthProvider();
 
+type EmptyFunction<T> = (result:T) =>void;
+
+interface PropsLoginComponent {
+    onSuccessfulLogin: EmptyFunction<UserCredential>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onUnsuccessfulLogin: EmptyFunction<any>,
+}
 
 function EmailPasswordLoginComponent(): JSX.Element {
     const [isCriarConta, setIsCriarConta] = useState(false)
     const [password, setPassword] = useState('')
     const [email, setEmail] = useState('')
     const criarContaFn = () => {
-        createUserWithEmailAndPassword(firebaseStuff.auth, email, password)
+        createUserWithEmailAndPassword(myFirebase.auth, email, password)
             .then((userCredential) => {
                 console.log("created account", userCredential)
             })
@@ -27,7 +30,7 @@ function EmailPasswordLoginComponent(): JSX.Element {
     }
 
     const loginFn = () => {
-        signInWithEmailAndPassword(firebaseStuff.auth, email, password)
+        signInWithEmailAndPassword(myFirebase.auth, email, password)
             .then((userCredential) => {
                 console.log("signed in", userCredential)
             })
@@ -53,7 +56,7 @@ function EmailPasswordLoginComponent(): JSX.Element {
 
 }
 
-function GithubLoginComponent(): JSX.Element {
+function GithubLoginComponent(props:Readonly<PropsLoginComponent>): JSX.Element {
     const login = () => {
         console.log("boas")
             signInWithPopup(myFirebase.auth, githubProvider)
@@ -64,6 +67,7 @@ function GithubLoginComponent(): JSX.Element {
                 const token = credential!.accessToken;
                 const user = result.user;
                 console.log(token, user)
+                props.onSuccessfulLogin(result);
             }).catch((error) => {
                 
                 // Handle Errors here.
@@ -74,6 +78,7 @@ function GithubLoginComponent(): JSX.Element {
                 // The AuthCredential type that was used.
                 const credential = GithubAuthProvider.credentialFromError(error);
                 console.log(errorCode, errorMessage, email, credential)
+                props.onUnsuccessfulLogin(error)
             });
     }
 
@@ -94,13 +99,20 @@ enum LoginToBeUsedEnum {
 
 export default function Login(): JSX.Element {
     const [loginToBeUsed, setLoginToBeUsed] = useState<LoginToBeUsedEnum>(LoginToBeUsedEnum.Github)
-    
+    const [isSuccessfulLogin, setIsSuccessfulLogin] = useState<{isSuccess?: boolean, message?: string}>({})
     const determineLoginComponentToBeUsed = () => {
         switch(loginToBeUsed) {
             case LoginToBeUsedEnum.EmailPassword: return (<EmailPasswordLoginComponent/>)
-            case LoginToBeUsedEnum.Github: return (<GithubLoginComponent/>)
+            case LoginToBeUsedEnum.Github: return (<GithubLoginComponent onSuccessfulLogin={()=>setIsSuccessfulLogin({isSuccess:true})} onUnsuccessfulLogin={(error)=>setIsSuccessfulLogin({isSuccess: false, message:`${error.code} - ${error!.message}`})}/>)
         }
     }
+
+    useEffect(()=>{
+        console.log(myFirebase.auth.currentUser)
+        if (myFirebase.auth.currentUser !== null)
+            setIsSuccessfulLogin({isSuccess:true})
+    },[])
+
     return (<>
         <fieldset>
             <legend>Select login type</legend>
@@ -115,14 +127,25 @@ export default function Login(): JSX.Element {
         </fieldset>
         {determineLoginComponentToBeUsed()}
         <br></br>
-        <button onClick={()=>{
-            signOut(myFirebase.auth)
-        }}>LOGOUT</button>
+        {
+            myFirebase.auth.currentUser !== null ? <button onClick={()=>{
+                signOut(myFirebase.auth).then(()=>setIsSuccessfulLogin({}))
+            }}>LOGOUT</button> : null
+        }
         <button onClick={()=>{
             console.log(myFirebase.auth.currentUser)
             console.log(loginToBeUsed)
-        }}>teste</button>
-
+            console.log(isSuccessfulLogin)
+        }}>teste.</button>
+        {
+            isSuccessfulLogin.isSuccess === undefined ? 
+                null
+                :
+                <div>
+                    <h4>{isSuccessfulLogin.isSuccess ? 'Login com successo' : 'Login sem sucesso'}</h4>
+                    {isSuccessfulLogin.isSuccess === false ? <p>{isSuccessfulLogin.message}</p> : null}
+                </div>
+        }
     </>)
 }
 

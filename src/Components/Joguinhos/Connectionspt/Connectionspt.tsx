@@ -134,7 +134,7 @@ export default function Connectionspt(): JSX.Element {
             setGame(getScrambledWordsFromGame(game))
         }
         getConnections()
-        console.log(game)
+        //console.log(game)
         myFirebase.auth.onAuthStateChanged((user) => {
             if (user !== null && myFirebase.userIsMartinho(user.uid)) {
                 setUserMartinho(user)
@@ -143,7 +143,7 @@ export default function Connectionspt(): JSX.Element {
             }
         });
     }, [])
-    
+    const showToast = () => toast('One away!', {duration:3000, position:'top-center', icon:'🤏', style: {backgroundColor:'black', color:'white'}});
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
     const [numberOfGuessesLeft, setNumberOfGuessesLeft] = useState(4)
     const [guessesMade, setGuessesMade] = useState<GuessMade[]>([])
@@ -196,7 +196,7 @@ export default function Connectionspt(): JSX.Element {
         selectedWords.forEach(val=>cores[val.word.color] !== undefined ? cores[val.word.color] = cores[val.word.color] + 1 : cores[val.word.color] = 1)
         const keys = Object.keys(cores)
         if (keys.length === 2 && (cores[keys[0]] === 1 || cores[keys[0]] === 3)) 
-            toast('One away!', {duration:3000, position:'top-center', icon:'🤏'})
+            showToast()
         return Object.keys(cores).length === 1
     }
 
@@ -330,8 +330,8 @@ export default function Connectionspt(): JSX.Element {
             <div>
                 <Toaster/>
                 <div className='gameTableParent'>
-                <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
-                <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
+                    <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
+                    <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
                     {
                         guessesMade.length === 0 ? null
                             :
@@ -339,23 +339,28 @@ export default function Connectionspt(): JSX.Element {
                     }
                     <div className='gameTable'>
                         {
-                            game === undefined && guessesMade.length === 0 ? <h1>LOADING</h1>
+                            game === undefined && guessesMade.length === 0 ? 
+                                <h1>LOADING</h1>
                                 :
-                                game === undefined ? null : game.map(convertSelectedWordToTile)
+                                game === undefined ?
+                                    null 
+                                    :
+                                    game.map(convertSelectedWordToTile)
                         }
                     </div>
                     <p style={{ fontWeight: 'bold', fontSize: 24, textAlign: 'center', marginTop: '16px', marginBottom: '12px' }}>Tentativas restantes: {numberOfGuessesLeft}</p>
-                    <div id="divBotoesConnections" style={{ justifySelf: 'center', paddingLeft: '1.5%' }}>
-                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (selectedWords.length === 4) performPostEvaluateLogic(evaluateSubmission()) }} disabled={selectedWords.length !== 4} >Submeter</button>&nbsp;
-                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); removeSelection() }} disabled={selectedWords.length === 0}>Remover seleção</button>&nbsp;
-                        <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game!, true)! as SelectedWord[]) }}>Shuffle</button>
-                    </div>
                     <div className='animateClick teste'>swag</div>
+                </div>
+                <div id="divBotoesConnections" style={{ display: 'flex', justifyContent:'center' }}>
+                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (selectedWords.length === 4) performPostEvaluateLogic(evaluateSubmission()) }} disabled={selectedWords.length !== 4} >Submeter</button>&nbsp;
+                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); removeSelection() }} disabled={selectedWords.length === 0}>Remover seleção</button>&nbsp;
+                    <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game, true)! as SelectedWord[]) }}>Shuffle</button>
                 </div>
             </div>
     )
 }
 
+//<button className='connectionButton' onClick={(ev) => { showToast() }}>teste</button>
 
 
 function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
@@ -368,6 +373,22 @@ function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
     const [customDate, setCustomDate] = useState<string>('')
 
     const firebaseWordsBuilder = (): FirebaseWords => {
+        yellowWords.title = yellowWords.title.trim()
+        if (yellowWords.title.endsWith("-")) {
+            yellowWords.title = yellowWords.title.slice(0,yellowWords.title.length-1).trim()
+        }
+        blueWords.title = blueWords.title.trim()
+        if (blueWords.title.endsWith("-")) {
+            blueWords.title = blueWords.title.slice(0,blueWords.title.length-1).trim()
+        }
+        purpleWords.title = purpleWords.title.trim()
+        if (purpleWords.title.endsWith("-")) {
+            purpleWords.title = purpleWords.title.slice(0,purpleWords.title.length-1).trim()
+        }
+        greenWords.title = greenWords.title.trim()
+        if (greenWords.title.endsWith("-")) {
+            greenWords.title = greenWords.title.slice(0,greenWords.title.length-1).trim()
+        }
         return {
             yellow: yellowWords,
             blue: blueWords,
@@ -456,7 +477,7 @@ function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
                                 <li>
                                     <label htmlFor={currColor + ' Title'}>{currColor + ' Title'}&nbsp;&nbsp;</label>
                                     <input id={currColor + ' Title'} value={category.title} type="text" onChange={(ev) => {
-                                        stateFunction({title:ev.target.value.trim(), words: category.words})
+                                        stateFunction({title:ev.target.value, words: category.words})
                                     }}></input>
                                 </li>
                             </ul>
