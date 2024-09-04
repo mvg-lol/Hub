@@ -143,7 +143,9 @@ export default function Connectionspt(): JSX.Element {
             }
         });
     }, [])
-    const showToast = () => toast('One away!', {duration:3000, position:'top-center', icon:'🤏', style: {backgroundColor:'black', color:'white'}});
+    const showToast = (msg: string, emoji: '🤏' | undefined) => {
+        toast(msg, {duration:3000, position:'top-center', icon:emoji, style: {backgroundColor:'black', color:'white'}});
+    }
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
     const [numberOfGuessesLeft, setNumberOfGuessesLeft] = useState(4)
     const [guessesMade, setGuessesMade] = useState<GuessMade[]>([])
@@ -195,9 +197,8 @@ export default function Connectionspt(): JSX.Element {
         const cores: {[key:string]:number} = {}
         selectedWords.forEach(val=>cores[val.word.color] !== undefined ? cores[val.word.color] = cores[val.word.color] + 1 : cores[val.word.color] = 1)
         const keys = Object.keys(cores)
-        if (keys.length === 2 && (cores[keys[0]] === 1 || cores[keys[0]] === 3)) 
-            showToast()
-        return Object.keys(cores).length === 1
+        const isOneAway = keys.length === 2 && (cores[keys[0]] === 1 || cores[keys[0]] === 3)
+        return {result: Object.keys(cores).length === 1,isOneAway: isOneAway}
     }
 
     const saveCurrentGuessesToLocalStorageOrDB = () => {
@@ -212,7 +213,8 @@ export default function Connectionspt(): JSX.Element {
         }
     }
 
-    const performPostEvaluateLogic = (result: boolean) => {
+    const performPostEvaluateLogic = (res : {result: boolean, isOneAway: boolean}) => {
+        const {result, isOneAway} = res
         let numberGuessesLeft = numberOfGuessesLeft - 1
         let wasGuessValid = 0; // se for 4, a guess foi válida
         if (!result) {
@@ -230,9 +232,16 @@ export default function Connectionspt(): JSX.Element {
                 if (wasGuessValid === 4) break
                 else wasGuessValid = 0
             }
-            if (wasGuessValid !== 4) // signifca que esta guess atual nunca foi feita, podemos subtrair
+            console.log(res, result, isOneAway, wasGuessValid, wasGuessValid !== 4)
+            if (wasGuessValid !== 4) { // signifca que esta guess atual nunca foi feita, podemos subtrair
                 setNumberOfGuessesLeft(numberGuessesLeft)
-            else numberGuessesLeft = numberGuessesLeft + 1
+                if (isOneAway)
+                    showToast('Falta um!', '🤏')
+            }
+            else {
+                numberGuessesLeft = numberGuessesLeft + 1
+                showToast('Já usaste esta combinação', undefined)
+            }
         }
         const [botaoSubmeter] = document.getElementById("divBotoesConnections")!.getElementsByTagName("button")
         if (numberGuessesLeft === 0) {
