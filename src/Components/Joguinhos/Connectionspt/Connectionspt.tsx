@@ -213,7 +213,7 @@ export default function Connectionspt(): JSX.Element {
     }
 
     const performPostEvaluateLogic = (result: boolean) => {
-        const numberGuessesLeft = numberOfGuessesLeft - 1
+        let numberGuessesLeft = numberOfGuessesLeft - 1
         let wasGuessValid = 0; // se for 4, a guess foi válida
         if (!result) {
             for (const guess of guessesMade) {
@@ -232,6 +232,7 @@ export default function Connectionspt(): JSX.Element {
             }
             if (wasGuessValid !== 4) // signifca que esta guess atual nunca foi feita, podemos subtrair
                 setNumberOfGuessesLeft(numberGuessesLeft)
+            else numberGuessesLeft = numberGuessesLeft + 1
         }
         const [botaoSubmeter] = document.getElementById("divBotoesConnections")!.getElementsByTagName("button")
         if (numberGuessesLeft === 0) {
