@@ -123,3 +123,28 @@
         transform: translate(0px);
     }
 }
+
+.guessGridResult {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    align-self: center;
+    justify-self: center;
+    margin: 0 auto;
+    max-width: 200px;
+}
+
+.guessSquareLine {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-self: center;
+    justify-self: center;
+    gap: 10px;
+    padding-top: 4px;
+}
+
+.guessSquare {
+    height: 50px;
+    width:  50px;
+    border-radius: 6px;
+}

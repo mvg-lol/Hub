@@ -149,6 +149,7 @@ export default function Connectionspt(): JSX.Element {
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
     const [numberOfGuessesLeft, setNumberOfGuessesLeft] = useState(4)
     const [guessesMade, setGuessesMade] = useState<GuessMade[]>([])
+    const [answers, setAnswers] = useState<GuessMade[]>([])
 
     // a classe CSS TEM de ter a variável --animation-time definida
     const animateButton = (classNameForAnimation: string, element: HTMLElement) => {
@@ -232,7 +233,6 @@ export default function Connectionspt(): JSX.Element {
                 if (wasGuessValid === 4) break
                 else wasGuessValid = 0
             }
-            console.log(res, result, isOneAway, wasGuessValid, wasGuessValid !== 4)
             if (wasGuessValid !== 4) { // signifca que esta guess atual nunca foi feita, podemos subtrair
                 setNumberOfGuessesLeft(numberGuessesLeft)
                 if (isOneAway)
@@ -253,6 +253,7 @@ export default function Connectionspt(): JSX.Element {
         {
             const newGame = game!.filter(val => val.word.color != selectedWords[0].word.color)
             setGame(newGame)
+            setAnswers(answers.concat(g[g.length-1]))
             if (newGame.length === 0)
                 saveCurrentGuessesToLocalStorageOrDB()
         }
@@ -268,7 +269,7 @@ export default function Connectionspt(): JSX.Element {
                 answers.push({ guess: firebaseWords!.green.words.map((word, index) => { return { word: { word: word, color: Color.Green }, idString: `green${word}${index}` } }), wasSuccessful: true })
                 answers.push({ guess: firebaseWords!.blue.words.map((word, index) => { return { word: { word: word, color: Color.Blue }, idString: `blue${word}${index}` } }), wasSuccessful: true })
                 answers.push({ guess: firebaseWords!.purple.words.map((word, index) => { return { word: { word: word, color: Color.Purple }, idString: `purple${word}${index}` } }), wasSuccessful: true })
-                setGuessesMade(answers)
+                setAnswers(answers)
                 setGame(undefined)
             }
         }
@@ -343,9 +344,9 @@ export default function Connectionspt(): JSX.Element {
                     <h1 style={{ marginTop:'12px', marginBottom:'0px' }}>CONEXÕÕÕÕÕESSSS</h1>
                     <p style={{ fontSize:'8px', marginTop:'4px', marginBottom:'16px', textAlign:'center' }}>im connectinggggggggggggggggggg</p>
                     {
-                        guessesMade.length === 0 ? null
+                        answers.length === 0 ? null
                             :
-                            guessesMade.map(convertGuessToHTML)
+                            answers.map(convertGuessToHTML)
                     }
                     <div className='gameTable'>
                         {
@@ -366,6 +367,25 @@ export default function Connectionspt(): JSX.Element {
                     <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); removeSelection() }} disabled={selectedWords.length === 0}>Remover seleção</button>&nbsp;
                     <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game, true)! as SelectedWord[]) }}>Shuffle</button>
                 </div>
+                {
+                numberOfGuessesLeft <= 0 ?
+                <div className='guessGridResult' style={{paddingTop: '16px'}}>
+                    {guessesMade.map((guess)=>{
+                        const words = guess.guess
+                        console.log(guessesMade)
+                        const row = words.map((word)=>{
+                            return (
+                                <div className='guessSquare' style={{background:word.word.color}}>
+                                </div>
+                            )
+                        })
+                        return (<div className='guessSquareLine'>
+                            {row}
+                        </div>)
+                    })}
+                </div>
+                : null
+                }
             </div>
     )
 }
