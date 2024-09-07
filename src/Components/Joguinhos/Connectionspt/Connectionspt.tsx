@@ -105,13 +105,9 @@ export default function Connectionspt(): JSX.Element {
     const [firebaseWords, setFirebaseWords] = useState<FirebaseWords>()
     const [gameDatesAvailable, setGameDatesAvailable] = useState<{date:Date, game:FirebaseWords}[]>([])
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-    const [paginateGames, setPaginateGames] = useState<number>(0)
+    //const [paginateGames, setPaginateGames] = useState<number>(0)
     useEffect(() => {
         async function getConnections() {
-            //const today = /*true ? Date.UTC(2024,7,7).toString() :*/ new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-");
-            //const docRef = doc(myFirebase.db, "connections", today)
-            //const docSnap = await getDoc(docRef)
-            //console.log(docSnap.data(), docSnap.exists(), today)
             let game: FirebaseWords = {
                 green: {
                     title: "Sinónimos de Lindo",
@@ -130,9 +126,6 @@ export default function Connectionspt(): JSX.Element {
                     words: ['congratular', 'felicitar', 'saudar', 'salvar']
                 }
             };
-            //if (docSnap.exists()){
-            //    game = docSnap.data() as FirebaseWords
-            //} else { //obter jogo mais recente se nao houver hoje
             const q = query(collection(myFirebase.db, "connections"));
             const querySnapshot = await getDocs(q);
             if (!querySnapshot.empty) {
@@ -142,7 +135,7 @@ export default function Connectionspt(): JSX.Element {
                 const res = querySnapshot.docs.map((val)=> {
                     const split = val.id.split("-").map(val => parseInt(val))
                     const obj = {
-                        date:new Date(split[2], split[1]-1, split[0]),
+                        date:new Date(split[0], split[1]-1, split[2]),
                         game: val.data() as FirebaseWords
                     }
                     dates.push(obj)
@@ -150,7 +143,8 @@ export default function Connectionspt(): JSX.Element {
                 }).reduce((a,b)=> a.date > b.date ? a : b)
                 game = res.game
                 setSelectedDate(res.date)
-                setGameDatesAvailable(dates.reverse())
+                const now = new Date(Date.now())
+                setGameDatesAvailable(dates.filter((val)=> val.date <= now).reverse())
             }
             //}
             setFirebaseWords(game);
@@ -216,8 +210,6 @@ export default function Connectionspt(): JSX.Element {
     }
 
     const evaluateSubmission = () => {
-        //const colorOfFirstWord = selectedWords[0].word.color
-        //const wordsOfTheSameColorAsFirst = selectedWords.filter(val => val.word.color === colorOfFirstWord);
         const cores: {[key:string]:number} = {}
         selectedWords.forEach(val=>cores[val.word.color] !== undefined ? cores[val.word.color] = cores[val.word.color] + 1 : cores[val.word.color] = 1)
         const keys = Object.keys(cores)
@@ -416,9 +408,9 @@ export default function Connectionspt(): JSX.Element {
                     flexDirection:'column',
                     paddingTop:'12px'
                 }}>
-                    Escolhe outro jogo: <button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button> 
+                    Escolhe outro jogo: {/*<button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button>*/} 
                     {
-                        gameDatesAvailable.slice(paginateGames, paginateGames+10).map(val => (
+                        gameDatesAvailable/*.slice(paginateGames, paginateGames+10)*/.map(val => (
                             <button disabled={val.date === selectedDate} onClick={()=>{
                                 const game = val.game
                                 setFirebaseWords(game);
@@ -445,7 +437,7 @@ export default function Connectionspt(): JSX.Element {
 //<button className='connectionButton' onClick={(ev) => { showToast() }}>teste</button>
 
 
-function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
+function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Element {
     const [yellowWords, setYellowWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
     const [blueWords, setBlueWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
     const [greenWords, setGreenWords] = useState<Category>({title:'1', words: ['123','123','123','123']})
@@ -521,7 +513,7 @@ function ScriptInserirConnections(props: {martinho: User}): JSX.Element {
         date.setDate(date.getDate() + 1)
         return {
             data: arr[0].data,
-            date: date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")
+            date: date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).split("/").reverse().join("-")
         }
     }
 
