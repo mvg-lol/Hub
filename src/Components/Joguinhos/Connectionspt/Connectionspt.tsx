@@ -105,6 +105,7 @@ export default function Connectionspt(): JSX.Element {
     const [firebaseWords, setFirebaseWords] = useState<FirebaseWords>()
     const [gameDatesAvailable, setGameDatesAvailable] = useState<{date:Date, game:FirebaseWords}[]>([])
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+    const [paginateGames, setPaginateGames] = useState<number>(0)
     useEffect(() => {
         async function getConnections() {
             //const today = /*true ? Date.UTC(2024,7,7).toString() :*/ new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-");
@@ -415,9 +416,9 @@ export default function Connectionspt(): JSX.Element {
                     flexDirection:'column',
                     paddingTop:'12px'
                 }}>
-                    Escolhe outro jogo:
+                    Escolhe outro jogo: <button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button> 
                     {
-                        gameDatesAvailable.map(val => (
+                        gameDatesAvailable.slice(paginateGames, paginateGames+10).map(val => (
                             <button disabled={val.date === selectedDate} onClick={()=>{
                                 const game = val.game
                                 setFirebaseWords(game);
