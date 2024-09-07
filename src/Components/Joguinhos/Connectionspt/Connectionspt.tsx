@@ -382,7 +382,7 @@ export default function Connectionspt(): JSX.Element {
                     <button className='connectionButton' onClick={(ev) => { animateButton(AnimationTypes.Click, ev.currentTarget); if (game) setGame(shuffleArray(game, true)! as SelectedWord[]) }}>Shuffle</button>
                 </div>
                 {
-                numberOfGuessesLeft <= 0 ?
+                numberOfGuessesLeft <= 0 || game?.length === 0 ?
                 <div className='guessGridResult' style={{paddingTop: '16px'}}>
                     {guessesMade.map((guess)=>{
                         const words = guess.guess
