@@ -1,5 +1,5 @@
 import './Connectionspt.css'
-import { collection, doc, DocumentData, documentId, FirestoreDataConverter, getDoc, getDocs, orderBy, query, QueryDocumentSnapshot, setDoc, SnapshotOptions } from 'firebase/firestore'
+import { collection, doc, DocumentData, documentId, FirestoreDataConverter, getDocs, orderBy, query, QueryDocumentSnapshot, setDoc, SnapshotOptions } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 import myFirebase from '../../../common/firebase'
 //@ts-expect-error react scale text não tem @types
@@ -103,12 +103,14 @@ export default function Connectionspt(): JSX.Element {
     const [game, setGame] = useState<SelectedWord[]>()
     const [userMartinho, setUserMartinho] = useState<User|null>(null)
     const [firebaseWords, setFirebaseWords] = useState<FirebaseWords>()
+    const [gameDatesAvailable, setGameDatesAvailable] = useState<{date:Date, game:FirebaseWords}[]>([])
+    const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     useEffect(() => {
         async function getConnections() {
-            const today = /*true ? Date.UTC(2024,7,7).toString() :*/ new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-");
-            const docRef = doc(myFirebase.db, "connections", today)
-            const docSnap = await getDoc(docRef)
-            console.log(docSnap.data(), docSnap.exists(), today)
+            //const today = /*true ? Date.UTC(2024,7,7).toString() :*/ new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-");
+            //const docRef = doc(myFirebase.db, "connections", today)
+            //const docSnap = await getDoc(docRef)
+            //console.log(docSnap.data(), docSnap.exists(), today)
             let game: FirebaseWords = {
                 green: {
                     title: "Sinónimos de Lindo",
@@ -127,9 +129,29 @@ export default function Connectionspt(): JSX.Element {
                     words: ['congratular', 'felicitar', 'saudar', 'salvar']
                 }
             };
-            if (docSnap.exists()){
-                game = docSnap.data() as FirebaseWords
+            //if (docSnap.exists()){
+            //    game = docSnap.data() as FirebaseWords
+            //} else { //obter jogo mais recente se nao houver hoje
+            const q = query(collection(myFirebase.db, "connections"));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const dates: {date:Date, game: FirebaseWords}[] = [
+                    {date: new Date(2001,7-1,7), game}
+                ]
+                const res = querySnapshot.docs.map((val)=> {
+                    const split = val.id.split("-").map(val => parseInt(val))
+                    const obj = {
+                        date:new Date(split[2], split[1]-1, split[0]),
+                        game: val.data() as FirebaseWords
+                    }
+                    dates.push(obj)
+                    return obj
+                }).reduce((a,b)=> a.date > b.date ? a : b)
+                game = res.game
+                setSelectedDate(res.date)
+                setGameDatesAvailable(dates.reverse())
             }
+            //}
             setFirebaseWords(game);
             setGame(getScrambledWordsFromGame(game))
         }
@@ -386,6 +408,35 @@ export default function Connectionspt(): JSX.Element {
                 </div>
                 : null
                 }
+                <div style={{
+                    display:'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flexDirection:'column',
+                    paddingTop:'12px'
+                }}>
+                    Escolhe outro jogo:
+                    {
+                        gameDatesAvailable.map(val => (
+                            <button disabled={val.date === selectedDate} onClick={()=>{
+                                const game = val.game
+                                setFirebaseWords(game);
+                                setGame(getScrambledWordsFromGame(game))
+                                setNumberOfGuessesLeft(4)
+                                setAnswers([])
+                                setSelectedDate(val.date)
+                                setGuessesMade([])
+                                setSelectedWords([])
+                            }}
+                            key={val.date.toString()}
+                            style={{marginTop:'12px'}}
+                            className='connectionButton'
+                            >
+                                {val.date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'})}
+                            </button>
+                        ))
+                    }
+                </div>
             </div>
     )
 }
