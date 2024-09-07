@@ -5,7 +5,6 @@ import myFirebase from '../../../common/firebase'
 //@ts-expect-error react scale text não tem @types
 import ScaleText from 'react-scale-text'
 import { User } from 'firebase/auth'
-import 'firebase/firestore'
 import toast, { Toaster } from 'react-hot-toast'
 
 interface Category {
@@ -76,16 +75,16 @@ function shuffleArray(array: unknown[], returnNewArray: boolean = false) {
 
 function getScrambledWordsFromGame(game: FirebaseWords): SelectedWord[] {
     const wordList: Word[] = []
-    for (const word of game!.blue.words) {
+    for (const word of game.blue.words) {
         wordList.push({ word: word, color: Color.Blue })
     }
-    for (const word of game!.yellow.words) {
+    for (const word of game.yellow.words) {
         wordList.push({ word: word, color: Color.Yellow })
     }
-    for (const word of game!.purple.words) {
+    for (const word of game.purple.words) {
         wordList.push({ word: word, color: Color.Purple })
     }
-    for (const word of game!.green.words) {
+    for (const word of game.green.words) {
         wordList.push({ word: word, color: Color.Green })
     }
     shuffleArray(wordList)
@@ -490,13 +489,13 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
             const data = firebaseWordsBuilder()
             await setDoc(doc(myFirebase.db, "connections", cdate).withConverter(firebaseWordsConverter), data)
                 .then(()=>
-                    setErrorString("Sucesso")
+                    setErrorString(`Sucesso Data - ${cdate}`)
                 )
                 .catch(err=>setErrorString(err.toString()))
 
         }
     }
-    const newDateFromArray = (arr:number[]):Date => new Date(arr[2], arr[1]-1, arr[0])
+    const newDateFromArray = (arr:number[]):Date => new Date(arr[0], arr[1]-1, arr[2])
     const stringDateToDate = (date:string):Date => newDateFromArray(date.split("-").map(val => parseInt(val)))
     const getLatestConnection = async ():Promise<FirebaseWordsWithDate> => {
         const connectionsCol = collection(myFirebase.db, "connections").withConverter(firebaseWordsConverter);
@@ -581,9 +580,9 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
             </fieldset>
             {
                 errorString.length > 0 ?
-                <fieldset style={{color:errorString === 'Sucesso' ? '' : 'white', backgroundColor:errorString === 'Sucesso' ? 'green' : 'red', fontWeight:'bold'}}>
-                    <legend style={{backgroundColor:errorString === 'Sucesso' ? 'green' : 'red'}}>{errorString === 'Sucesso' ? errorString : 'ERRO:'}</legend>
-                    {errorString === 'Sucesso' ? null : <p>{errorString}</p>}
+                <fieldset style={{color:errorString.startsWith('Sucesso -') ? '' : 'white', backgroundColor:errorString.startsWith('Sucesso') ? 'green' : 'red', fontWeight:'bold'}}>
+                    <legend style={{backgroundColor:errorString.startsWith('Sucesso') ? 'green' : 'red'}}>{errorString.startsWith('Sucesso') ? 'Sucesso' : 'ERRO:'}</legend>
+                    {errorString === 'Sucesso' ? null : <p>{errorString.split('Sucesso')[1].trim()}</p>}
                 </fieldset>
             : null
             }
