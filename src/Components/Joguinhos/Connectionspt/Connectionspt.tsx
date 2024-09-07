@@ -131,6 +131,7 @@ export default function Connectionspt(): JSX.Element {
                 const dates: {date:Date, game: FirebaseWords}[] = [
                     {date: new Date(2001,7-1,7), game}
                 ]
+                const now = new Date(Date.now())
                 const res = querySnapshot.docs.map((val)=> {
                     const split = val.id.split("-").map(val => parseInt(val))
                     const obj = {
@@ -139,10 +140,9 @@ export default function Connectionspt(): JSX.Element {
                     }
                     dates.push(obj)
                     return obj
-                }).reduce((a,b)=> a.date > b.date ? a : b)
+                }).filter((val)=> val.date <= now).reduce((a,b)=> a.date > b.date ? a : b)
                 game = res.game
                 setSelectedDate(res.date)
-                const now = new Date(Date.now())
                 setGameDatesAvailable(dates.filter((val)=> val.date <= now).reverse())
             }
             //}
