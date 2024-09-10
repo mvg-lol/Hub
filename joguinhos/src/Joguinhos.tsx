@@ -1,7 +1,7 @@
 import './Connectionspt.css'
 import { collection, doc, DocumentData, documentId, FirestoreDataConverter, getDocs, orderBy, query, QueryDocumentSnapshot, setDoc, SnapshotOptions } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
-import myFirebase from '../../../common/firebase'
+import myFirebase from './firebase/firebase'
 //@ts-expect-error react scale text não tem @types
 import ScaleText from 'react-scale-text'
 import { User } from 'firebase/auth'
@@ -94,7 +94,7 @@ function getScrambledWordsFromGame(game: FirebaseWords): SelectedWord[] {
     })
 }
 
-export default function Connectionspt(): JSX.Element {
+function Connectionspt(): JSX.Element {
     //let connections = collection(myFirebase.db, "connections")
     const selectedWordColor = '#BBBBBB'
     const defaultWordColor = 'bisque'
@@ -588,4 +588,11 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
             }
         </>
     )
+}
+
+
+export default function Joguinhos(): JSX.Element {
+  return (
+    <Connectionspt/>
+  )
 }

@@ -4,7 +4,7 @@ name: Deploy MVG static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ['main']
+    branches: ['split-react-porque-vicente']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -35,6 +35,8 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+      - name: Move to folder
+        uses: cd joguinhos/
       - name: Install dependencies
         run: npm ci
       - name: Build
