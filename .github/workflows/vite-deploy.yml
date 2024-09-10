@@ -28,6 +28,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: teste
+        run: ls
       - name: Move to folder
         run: cd joguinhos/
       - name: Checkout
