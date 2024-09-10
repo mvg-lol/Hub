@@ -36,7 +36,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Move to folder
-        uses: cd joguinhos/
+        run: cd joguinhos/
       - name: Install dependencies
         run: npm ci
       - name: Build
