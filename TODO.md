@@ -17,6 +17,7 @@
 - comprar o ricadinho.com/ricadinho.pt(gratis 1 ano no amen.pt)/ricadinho.eu ou outro e o resto dos sites
 - meter o meu site antigo no mvg.lol/RICADINHO
 - Quando os sites tiverem todos online fazer o hub tipo o de skywars do hypixel, isto pode ser bué complicado mas tava a pensar fazer um jogo em que andavas pelo hub e podias ir visitar cada um dos nossos sites
+- meter cada pagina que cada um fez no fim "-by RICADINHO" da pessoa que fez
 
 #### medias
 - fazer gif com uma claque de futebol mas em vez de ter o nome do clube diz MVG
