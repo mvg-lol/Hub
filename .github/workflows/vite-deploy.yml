@@ -47,8 +47,9 @@ jobs:
         run: 'mkdir dist'
       - name: move everything
         run: |
+              ls
               shopt -s extglob 
-              mv !(dist/) dist/
+              mv !(joguinhos|dist) dist/
       - name: move everything
         run: |
               mkdir ./dist/joguinhos/
