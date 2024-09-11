@@ -42,6 +42,17 @@ jobs:
       - name: Build
         working-directory: './joguinhos'
         run: npm run build
+      - name: make dist dir
+        run: mkdir ./dist
+      - name: move everything
+        run: mv ./!(./joguinhos/)
+      - name: move everything
+        run: mkdir ./dist/joguinhos/ && mv ./joguinhos/dist ./dist/joguinhos
+      - name: ls 1
+        run: ls
+      - name: ls 2
+        run: ls ./dist
+        
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
