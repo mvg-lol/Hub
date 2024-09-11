@@ -48,7 +48,7 @@ jobs:
       - name: move everything
         run: |
               shopt -s extglob 
-              mv !(joguinhos/|dist/) dist/
+              mv !(./joguinhos/|./dist/) dist/
       - name: move everything
         run: |
               mkdir ./dist/joguinhos/
