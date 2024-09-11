@@ -30,15 +30,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Move to Folder
-        run: |
-              cd joguinhos/
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
+          cache-dependency-path: joguinhos/package-lock.json
           node-version: 20
           cache: 'npm'
       - name: Install dependencies
+        working-directory: ./joguinhos
         run: npm ci
       - name: Build
         working-directory: ./joguinhos
