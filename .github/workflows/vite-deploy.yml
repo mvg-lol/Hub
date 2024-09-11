@@ -43,6 +43,7 @@ jobs:
         working-directory: './joguinhos'
         run: npm run build
       - name: make dist dir
+        working-directory: './'
         run: 'mkdir dist'
       - name: move everything
         run: |
