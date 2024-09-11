@@ -43,15 +43,15 @@ jobs:
         working-directory: './joguinhos'
         run: npm run build
       - name: make dist dir
-        run: mkdir ./dist
+        run: 'mkdir dist'
       - name: move everything
-        run: mv ./!(./joguinhos/)
+        run: 'mv !(joguinhos/) dist/'
       - name: move everything
-        run: mkdir ./dist/joguinhos/ && mv ./joguinhos/dist ./dist/joguinhos
+        run: 'mkdir ./dist/joguinhos/ && mv ./joguinhos/dist ./dist/joguinhos'
       - name: ls 1
-        run: ls
+        run: 'ls'
       - name: ls 2
-        run: ls ./dist
+        run: 'ls ./dist'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
