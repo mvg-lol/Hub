@@ -94,6 +94,10 @@ function getScrambledWordsFromGame(game: FirebaseWords): SelectedWord[] {
     })
 }
 
+function dateToMyString(date:Date): string {
+    return date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")
+}
+
 export default function Connectionspt(): JSX.Element {
     //let connections = collection(myFirebase.db, "connections")
     const selectedWordColor = '#BBBBBB'
@@ -217,15 +221,17 @@ export default function Connectionspt(): JSX.Element {
     }
 
     const saveCurrentGuessesToLocalStorageOrDB = () => {
-        {
+        const dateString = `connection${dateToMyString(selectedDate)}`;
+        
             //save to localstorage
-            localStorage.setItem(`connection${new Date(Date.now()).toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")}`, JSON.stringify(guessesMade))
-        }
-        {
+            if (localStorage.getItem(dateString) === null)
+                localStorage.setItem(dateString, JSON.stringify(guessesMade))
+        
+        
             //TODO GUARDAR NO USER NO FIREBASE
             //save to firebase
             console.error("TODO FIREBASE IMPL")
-        }
+        
     }
 
     const performPostEvaluateLogic = (res : {result: boolean, isOneAway: boolean}) => {
@@ -409,8 +415,11 @@ export default function Connectionspt(): JSX.Element {
                 }}>
                     Escolhe outro jogo: {/*<button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button>*/} 
                     {
-                        gameDatesAvailable/*.slice(paginateGames, paginateGames+10)*/.map(val => (
-                            <button disabled={val.date === selectedDate} onClick={()=>{
+                        gameDatesAvailable/*.slice(paginateGames, paginateGames+10)*/.map(val => {
+                            const date = dateToMyString(val.date)
+                            let addDone = false
+                            if (localStorage.getItem(`connection${date}`) !== null) addDone = true
+                            return (<button disabled={val.date === selectedDate} onClick={()=>{
                                 const game = val.game
                                 setFirebaseWords(game);
                                 setGame(getScrambledWordsFromGame(game))
@@ -424,9 +433,9 @@ export default function Connectionspt(): JSX.Element {
                             style={{marginTop:'12px'}}
                             className='connectionButton'
                             >
-                                {val.date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'})}
-                            </button>
-                        ))
+                                {date.replaceAll("-","/").concat(addDone ? " ✅" : "")}
+                            </button>)
+                        })
                     }
                 </div>
             </div>
@@ -516,6 +525,21 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
         }
     }
 
+    const teste = async ()=> {
+        /*const connectionsCol = collection(myFirebase.db, "connections").withConverter(firebaseWordsConverter);
+        const q = query(connectionsCol, orderBy(documentId()))
+        const qsnapshot = await getDocs(q)
+        let arr = []
+        qsnapshot.forEach(x =>{ console.log(x.data() as FirebaseWords, x.id);arr.push(x)})
+        arr = arr.reverse()
+        arr = arr.slice(0,3).reverse()
+        console.log("____________")
+        arr.forEach(x => console.log(x.data(), x.id))
+        await setDoc(doc(myFirebase.db, "connections", "2024-09-19").withConverter(firebaseWordsConverter), arr[0].data())
+        await setDoc(doc(myFirebase.db, "connections", "2024-09-22").withConverter(firebaseWordsConverter), arr[1].data())
+        await setDoc(doc(myFirebase.db, "connections", "2024-09-29").withConverter(firebaseWordsConverter), arr[2].data())*/
+    }
+
     return (
         <>
             <fieldset>
@@ -575,7 +599,7 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
                 <br></br>
                 <button onClick={()=>submitFunction()}>Submeter</button>
                 <button onClick={()=>setErrorString('')}>Limpar Erro</button>
-                <button onClick={()=>console.log(customDate)}>teste</button>
+                <button onClick={()=>{console.log(customDate); teste()}}>teste</button>
                 <button onClick={()=>{(document.getElementById('customdate') as HTMLInputElement).value = ''; setCustomDate('')}}>Resetar data escolhida</button>
             </fieldset>
             {
