@@ -27,6 +27,14 @@ enum Color {
     Blue = '#009FFF',
     Purple = '#E071FF'
 }
+function colorToEmoji(color:Color): string {
+    switch(color) {
+        case Color.Yellow:return '🟨'
+        case Color.Green:return '🟩'
+        case Color.Blue:return '🟦'
+        case Color.Purple:return '🟪'
+    }
+}
 type SelectedWord = {
     word: Word,
     idString: string
@@ -163,7 +171,7 @@ export default function Connectionspt(): JSX.Element {
             }
         });
     }, [])
-    const showToast = (msg: string, emoji: '🤏' | undefined) => {
+    const showToast = (msg: string, emoji: '📋' | '🤏' | undefined) => {
         toast(msg, {duration:3000, position:'top-center', icon:emoji, style: {backgroundColor:'black', color:'white'}});
     }
     const [selectedWords, setSelectedWords] = useState<SelectedWord[]>([])
@@ -395,14 +403,30 @@ export default function Connectionspt(): JSX.Element {
                         console.log(guessesMade)
                         const row = words.map((word)=>{
                             return (
-                                <div className='guessSquare' style={{background:word.word.color}}>
+                                <div key={word.idString} className='guessSquare' style={{background:word.word.color}}>
                                 </div>
                             )
                         })
-                        return (<div className='guessSquareLine'>
+                        return (<div key={guess.wasSuccessful+guess.guess.map(x=>x.word.word).join("")} className='guessSquareLine'>
                             {row}
                         </div>)
                     })}
+                    &nbsp;
+                    <button className='connectionButton' 
+                        onClick={(ev) => { 
+                            animateButton(AnimationTypes.Click, ev.currentTarget); 
+                            const rows:string[] = []
+                            guessesMade.forEach(guess=>{
+                                let str = ""
+                                guess.guess.forEach(val=>{str = str + colorToEmoji(val.word.color)})
+                                rows.push(str)
+                            })
+                            const str = `Conexões de ${dateToMyString(selectedDate)}\n${rows.join("\n")}\nJoga em https://mvg.lol/#/joguinhos`
+                            const blob = new Blob([str], { type:'text/plain' })
+                            const data = [new ClipboardItem({'text/plain':blob})]
+                            navigator.clipboard.write(data).then(()=>{console.log("wrotten"); showToast("Copiado!", '📋')}).catch((err)=>console.log("not wrotten",err))
+                    }} >Partilhar</button>
+                    
                 </div>
                 : null
                 }
