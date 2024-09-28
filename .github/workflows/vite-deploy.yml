@@ -58,8 +58,8 @@ jobs:
         run: 'ls'
       - name: ls 2
         run: 'ls ./dist'
-      - name: ls 3
-        run: 'ls ./dist/joguinhos'
+      - name: mover para tras pq ja nao sei como e que veio parar aqui
+        run: 'mv ./dist/joguinhos/dist/* ./dist/joguinhos/ && rmdir dist'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
