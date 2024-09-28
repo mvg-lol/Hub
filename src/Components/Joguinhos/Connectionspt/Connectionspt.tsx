@@ -120,6 +120,12 @@ export default function Connectionspt(): JSX.Element {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date())
     //const [paginateGames, setPaginateGames] = useState<number>(0)
     useEffect(() => {
+        for(let i = 0; i < localStorage.length; i++) { // remover entradas bugadas
+            const key = localStorage.key(i)!
+            const guesses = JSON.parse(localStorage.getItem(key)!) as GuessMade[]
+            if (guesses.length === 3)
+                localStorage.removeItem(key)
+        }
         async function getConnections() {
             let game: FirebaseWords = {
                 green: {
@@ -230,12 +236,12 @@ export default function Connectionspt(): JSX.Element {
         return {result: Object.keys(cores).length === 1,isOneAway: isOneAway}
     }
 
-    const saveCurrentGuessesToLocalStorageOrDB = () => {
+    const saveCurrentGuessesToLocalStorageOrDB = (guess: GuessMade[]) => {
         const dateString = `connection${dateToMyString(selectedDate)}`;
         
             //save to localstorage
             if (localStorage.getItem(dateString) === null)
-                localStorage.setItem(dateString, JSON.stringify(guessesMade))
+                localStorage.setItem(dateString, JSON.stringify(guess))
         
         
             //TODO GUARDAR NO USER NO FIREBASE
@@ -285,7 +291,7 @@ export default function Connectionspt(): JSX.Element {
             setGame(newGame)
             setAnswers(answers.concat(g[g.length-1]))
             if (newGame.length === 0)
-                saveCurrentGuessesToLocalStorageOrDB()
+                saveCurrentGuessesToLocalStorageOrDB(g)
         }
         else {
             for (const selectedWord of selectedWords) {
@@ -293,7 +299,7 @@ export default function Connectionspt(): JSX.Element {
                 animateButton(AnimationTypes.Shake, elem)
             }
             if (numberGuessesLeft == 0) {
-                saveCurrentGuessesToLocalStorageOrDB()
+                saveCurrentGuessesToLocalStorageOrDB(g)
                 const answers = Array<GuessMade>()
                 answers.push({ guess: firebaseWords!.yellow.words.map((word, index) => { return { word: { word: word, color: Color.Yellow }, idString: `yellow${word}${index}` } }), wasSuccessful: true })
                 answers.push({ guess: firebaseWords!.green.words.map((word, index) => { return { word: { word: word, color: Color.Green }, idString: `green${word}${index}` } }), wasSuccessful: true })
@@ -402,7 +408,6 @@ export default function Connectionspt(): JSX.Element {
                 <div className='guessGridResult' style={{paddingTop: '16px'}}>
                     {guessesMade.map((guess)=>{
                         const words = guess.guess
-                        console.log(guessesMade)
                         const row = words.map((word)=>{
                             return (
                                 <div key={word.idString} className='guessSquare' style={{background:word.word.color}}>
@@ -444,7 +449,14 @@ export default function Connectionspt(): JSX.Element {
                         gameDatesAvailable/*.slice(paginateGames, paginateGames+10)*/.map(val => {
                             const date = dateToMyString(val.date)
                             let addDone = false
-                            if (localStorage.getItem(`connection${date}`) !== null) addDone = true
+                            let result = ''
+                            if (localStorage.getItem(`connection${date}`) !== null) {
+                                addDone = true
+                                const guesses = JSON.parse(localStorage.getItem(`connection${date}`)!) as GuessMade[]
+                                if (guesses.filter(val => val.wasSuccessful).length === 4) 
+                                    result ='y'
+                                else result = 'n' 
+                            }
                             return (<button disabled={val.date === selectedDate} onClick={()=>{
                                 const game = val.game
                                 setFirebaseWords(game);
@@ -459,7 +471,7 @@ export default function Connectionspt(): JSX.Element {
                             style={{marginTop:'12px'}}
                             className='connectionButton'
                             >
-                                {date.replaceAll("-","/").concat(addDone ? " ✅" : "")}
+                                {date.replaceAll("-","/").concat(addDone ? (result === 'y' ? " ✅" : (result === 'n' ? ' ❎' : '')) : "")}
                             </button>)
                         })
                     }
@@ -524,7 +536,6 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
             }
             
             const data = firebaseWordsBuilder()
-            console.log(cdate)
             await setDoc(doc(myFirebase.db, "connections", cdate).withConverter(firebaseWordsConverter), data)
                 .then(()=>
                     setErrorString(`Sucesso Data - ${cdate}`)
