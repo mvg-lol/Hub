@@ -58,6 +58,8 @@ jobs:
         run: 'ls'
       - name: ls 2
         run: 'ls ./dist'
+      - name: ls 3
+        run: 'ls ./dist/joguinhos'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -65,7 +67,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload dist folder
-          path: './joguinhos'
+          path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
