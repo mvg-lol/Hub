@@ -50,16 +50,10 @@ jobs:
               ls
               shopt -s extglob 
               mv !(joguinhos|dist) dist/
-      - name: move everything
-        run: |
-              mkdir ./dist/joguinhos/
-              mv ./joguinhos/dist ./dist/joguinhos
       - name: ls 1
         run: 'ls'
       - name: ls 2
         run: 'ls ./dist'
-      - name: mover para tras pq ja nao sei como e que veio parar aqui
-        run: 'mv ./dist/joguinhos/dist/* ./dist/joguinhos/* && rmdir dist'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
