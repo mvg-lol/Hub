@@ -55,9 +55,9 @@ jobs:
       - name: ls 2
         run: 'ls ./dist'
       - name: ls 3
-        run: 'ls ./joguinhos'
+        run: 'ls ./joguinhos/dist'
       - name: mv
-        run: 'mv ./joguinhos ./dist/joguinhos'
+        run: 'mv ./joguinhos/dist ./dist/joguinhos'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
