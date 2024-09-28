@@ -18,8 +18,8 @@ interface FirebaseWords {
     purple: Category,
 }
 interface FirebaseWordsWithDate{
-    date: string,
-    data: FirebaseWords
+    data: FirebaseWords,
+    dateObj: Date
 }
 enum Color {
     Yellow = '#FBEC72',
@@ -102,8 +102,10 @@ function getScrambledWordsFromGame(game: FirebaseWords): SelectedWord[] {
     })
 }
 
-function dateToMyString(date:Date): string {
-    return date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")
+function dateToMyString(date:Date, yearmonthday: boolean = false): string {
+    if (!yearmonthday)
+        return date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-")
+    else return date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).split("/").reverse().join("-")
 }
 
 export default function Connectionspt(): JSX.Element {
@@ -516,10 +518,13 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
         if (myFirebase.userIsMartinho(props.martinho.uid)) {
             let cdate = customDate
             if (cdate.length !== 10) {
-                cdate = (await getLatestConnection()).date
-                console.log(cdate)
+                const words = (await getLatestConnection())
+                words.dateObj.setDate(words.dateObj.getDate()+7)
+                cdate = dateToMyString(words.dateObj, true)
             }
+            
             const data = firebaseWordsBuilder()
+            console.log(cdate)
             await setDoc(doc(myFirebase.db, "connections", cdate).withConverter(firebaseWordsConverter), data)
                 .then(()=>
                     setErrorString(`Sucesso Data - ${cdate}`)
@@ -535,21 +540,21 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
         const q = query(connectionsCol, orderBy(documentId()))
         const qsnapshot = await getDocs(q)
         let arr:FirebaseWordsWithDate[] = []
-        qsnapshot.forEach(val=>{ if(val.id.indexOf("-")>=0){ arr.push({date:val.id, data:val.data()})}})
-        arr = arr.sort((a,b)=>{
-            const datea = stringDateToDate(a.date)
-            const dateb = stringDateToDate(b.date)
-            return dateb.getTime() - datea.getTime()
-        }).filter(val => !Number.isNaN(val.date)).filter((_val,index)=> index === 0)
-        const date = stringDateToDate(arr[0].date)
-        date.setDate(date.getDate() + 1)
+        qsnapshot.forEach(val=>{ if(val.id.indexOf("-")>=0){ arr.push({dateObj:stringDateToDate(val.id), data:val.data()})}})
+        arr.sort((a,b)=>{
+            return b.dateObj.getTime() - a.dateObj.getTime()
+        });
+        arr = arr.filter(val => !Number.isNaN(val.dateObj)).filter((_val,index)=> index === 0)
+        const date = arr[0].dateObj
+        date.setDate(date.getDate())
         return {
             data: arr[0].data,
-            date: date.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).split("/").reverse().join("-")
+            dateObj: date
         }
     }
 
     const teste = async ()=> {
+        console.log(customDate)
         /*const connectionsCol = collection(myFirebase.db, "connections").withConverter(firebaseWordsConverter);
         const q = query(connectionsCol, orderBy(documentId()))
         const qsnapshot = await getDocs(q)
@@ -609,17 +614,22 @@ function ScriptInserirConnections(props: Readonly<{martinho: User}>): JSX.Elemen
                 <input type="date" step={1} id="customdate" name="customDate" onChange={(ev)=>{
                         try {
                             const parsedDateNumber = Date.parse(ev.target.value)
-                            const parsedDate = new Date(parsedDateNumber)
-                            const today = new Date(Date.now())
-                            console.log(today.getDate(), parsedDate.getDate(), parsedDate.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-"))
-                            if (parsedDate.getFullYear() >= today.getFullYear() && parsedDate.getMonth() >= today.getMonth() && parsedDate.getDay() >= today.getDay())
-                                setCustomDate(parsedDate.toLocaleDateString('pt-pt', {year: 'numeric', month:'numeric', day:'numeric'}).replaceAll("/","-"))
+                            let parsedDate = new Date(parsedDateNumber)
+                            parsedDate = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate())
+                            let today = new Date(Date.now())
+                            today = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+                            if (parsedDate >= today) {
+                                if (parsedDate.getDate() !== 0) {
+                                    parsedDate.setDate(parsedDate.getDate() + (7 - parsedDate.getDay()) % 7)
+                                }
+                                setCustomDate(dateToMyString(parsedDate, true))
+                            }
                             else setCustomDate('')
                         } catch (error) {
                             setCustomDate('')
                         }
                     }}
-                /> <label htmlFor="customdate"><u>Colocar uma data anterior à de hoje {new Date(Date.now()).toISOString().split("T")[0]}</u> ou <u>clicar no botao para colocar data automaticamente</u> ou <u>nao mexer nisto</u> (se o input nao estiver dd/mm/aaaa é do teu pc/browser)</label>
+                /> <label htmlFor="customdate"><u>VAI COLOCAR A DATA NO DOMINGO A SEGUIR A QUE COLOCASTE Colocar uma data anterior à de hoje {new Date(Date.now()).toISOString().split("T")[0]}</u> ou <u>clicar no botao para colocar data automaticamente</u> ou <u>nao mexer nisto</u> (se o input nao estiver dd/mm/aaaa é do teu pc/browser)</label>
                 <br></br>
                 <button onClick={()=>submitFunction()}>Submeter</button>
                 <button onClick={()=>setErrorString('')}>Limpar Erro</button>
