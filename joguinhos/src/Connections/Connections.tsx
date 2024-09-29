@@ -186,8 +186,10 @@ export default function Connectionspt(): JSX.Element {
         for (let i = 0; i < localStorage.length; i++) {
             // remover entradas bugadas
             const key = localStorage.key(i)!;
-            const guesses = JSON.parse(localStorage.getItem(key)!) as GuessMade[];
-            if (guesses.length === 3) localStorage.removeItem(key);
+            if (key.startsWith("connection")) {
+                const guesses = JSON.parse(localStorage.getItem(key)!) as GuessMade[];
+                if (guesses.length === 3) localStorage.removeItem(key);
+            }
         }
         async function getConnections() {
             let game: FirebaseWords = {

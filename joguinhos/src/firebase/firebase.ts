@@ -39,7 +39,6 @@ export const activateNotifications = async function (window: Window & typeof glo
 
             const sw = await window.navigator.serviceWorker.register(`/joguinhos/firebase-messaging-sw.js`, swOptions);
             await sw.update()
-            
             return sw
         } catch (error) {
             // Oops. Registration was unsucessfull
@@ -55,13 +54,14 @@ export const activateNotifications = async function (window: Window & typeof glo
 
                 return getToken(messaging, {
                     serviceWorkerRegistration: serviceWorkerRegistration,
-                    vapidKey: "<YOUR_PUBLIC_VAPID_KEY_HERE>",
+                    vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY",
                 })
                     .then((token) => {
                         // Generated a new FCM token for the client
                         // You can send it to server, e.g. fetch('your.server/subscribe', { token });
                         // And store it for further usages (Server, LocalStorage, IndexedDB, ...)
                         // For example:
+                        console.log(token)
                         window.localStorage.setItem("fcm_token", token);
                     })
                     .catch((err) => {
