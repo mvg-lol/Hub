@@ -27,7 +27,7 @@ const db = getFirestore(firebaseApp);
 const messaging = getMessaging();
 const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE => uidE === uid).length > 0
 
-navigator.serviceWorker.register('/joguinhos/firebase/firebase-messaging-sw.js')
+navigator.serviceWorker.register('/joguinhos/firebase-messaging-sw.js')
     .then((registration)=>{
         console.log(messaging, registration, "boas")
     })
