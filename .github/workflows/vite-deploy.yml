@@ -50,12 +50,6 @@ jobs:
               ls
               shopt -s extglob 
               mv !(joguinhos|dist) dist/
-      - name: ls 1
-        run: 'ls'
-      - name: ls 2
-        run: 'ls ./dist'
-      - name: ls 3
-        run: 'ls ./joguinhos/dist'
       - name: mv
         run: 'mv ./joguinhos/dist ./dist/joguinhos'
         
