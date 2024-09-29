@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithP
 import './Login.css'
 import 'firebaseui/dist/firebaseui.css'
 import { useEffect, useState } from 'react';
-import myFirebase from '../../common/firebase';
+import myFirebase from '../firebase/firebase';
 
 const githubProvider = new GithubAuthProvider();
 

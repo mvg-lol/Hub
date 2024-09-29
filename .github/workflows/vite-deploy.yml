@@ -4,7 +4,7 @@ name: Deploy MVG static content to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ['main']
+    branches: ['split-react-porque-vicente']
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -24,7 +24,7 @@ jobs:
   # Single deploy job since we're just deploying
   deploy:
     environment:
-      name: github-pages
+      name: split-react-teste
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
@@ -33,12 +33,32 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
+          cache-dependency-path: joguinhos/package-lock.json
           node-version: 20
           cache: 'npm'
       - name: Install dependencies
+        working-directory: './joguinhos'
         run: npm ci
       - name: Build
+        working-directory: './joguinhos'
         run: npm run build
+      - name: make dist dir
+        working-directory: './'
+        run: 'mkdir dist'
+      - name: move everything
+        run: |
+              ls
+              shopt -s extglob 
+              mv !(joguinhos|dist) dist/
+      - name: ls 1
+        run: 'ls'
+      - name: ls 2
+        run: 'ls ./dist'
+      - name: ls 3
+        run: 'ls ./joguinhos/dist'
+      - name: mv
+        run: 'mv ./joguinhos/dist ./dist/joguinhos'
+        
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Upload artifact
