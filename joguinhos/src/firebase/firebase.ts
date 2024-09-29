@@ -1,5 +1,5 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { FirebaseOptions, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -9,14 +9,14 @@ import { getMessaging } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+export const firebaseConfig: FirebaseOptions = {
     apiKey: "AIzaSyC7kZlJzHaUmQVUWFLW_QRZ48gOQ4vqvOA",
     authDomain: "mvg-lol.firebaseapp.com",
     projectId: "mvg-lol",
     storageBucket: "mvg-lol.appspot.com",
     messagingSenderId: "232319448366",
     appId: "1:232319448366:web:ae6ab9e476f837e633b6bf",
-    measurementId: "G-WLMK9WRGVG"
+    measurementId: "G-WLMK9WRGVG",
 };
 
 // Initialize Firebase
@@ -27,7 +27,16 @@ const db = getFirestore(firebaseApp);
 const messaging = getMessaging();
 const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE => uidE === uid).length > 0
 
-const myFirebase = {
+navigator.serviceWorker.register('/joguinhos/firebase/firebase-messaging-sw.js')
+    .then((registration)=>{
+        console.log(messaging, registration, "boas")
+        //messaging.useServiceWorker(registration)
+    })
+    .catch((err)=>{
+        console.log("erro", err)
+    })
+
+export const myFirebase = {
     app: firebaseApp,
     analytics: analytics,
     auth: auth,
@@ -41,6 +50,3 @@ export enum UIDsMartinho {
     Email = 'IvLqUzTDgefh29eaQ7Qf1lWoiVS2',
 }
 
-
-
-export default myFirebase 
