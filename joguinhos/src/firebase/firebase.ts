@@ -4,6 +4,7 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { onBackgroundMessage } from "firebase/messaging/sw";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -34,19 +35,20 @@ navigator.serviceWorker.register('/joguinhos/firebase-messaging-sw.js')
     .catch((err)=>{
         console.log("erro", err)
     })
-    const requestPermission = () => {
-        console.log("Pedir Permissoes")
-        Notification.requestPermission().then((permission)=>{
-            if (permission === 'granted')
-                alert("Irás receber notificação sempre que houver um jogo novo!")
-            else if (permission === 'denied')
-                alert('Não estás a receber notificação quando houver um jogo novo :(')
-        }).catch((err)=>{
-            alert("Erro a pedir permissao")
-            console.log(err)
-        })
-    }
-    getToken(messaging, {vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY"})
+
+const requestPermission = () => {
+    console.log("Pedir Permissoes")
+    Notification.requestPermission().then((permission)=>{
+        if (permission === 'granted')
+            alert("Irás receber notificação sempre que houver um jogo novo!")
+        else if (permission === 'denied')
+            alert('Não estás a receber notificação quando houver um jogo novo :(')
+    }).catch((err)=>{
+        alert("Erro a pedir permissao")
+        console.log(err)
+    })
+}
+getToken(messaging, {vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY"})
     .then((token)=>{
         if (token) {
             console.log("token ativo", token)
@@ -58,9 +60,9 @@ navigator.serviceWorker.register('/joguinhos/firebase-messaging-sw.js')
         console.log('An error occurred while retrieving token. ', err);
         // ...
     });
-    onMessage(messaging, (payload)=> {
-        console.log("message received", payload)
-    })
+onMessage(messaging, (payload)=> {
+    console.log("message received", payload)
+})
 
 export const myFirebase = {
     app: firebaseApp,
