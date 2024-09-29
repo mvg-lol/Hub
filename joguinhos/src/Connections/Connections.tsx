@@ -12,6 +12,7 @@ import {
     setDoc,
     SnapshotOptions,
 } from "firebase/firestore";
+import { Helmet } from "react-helmet";
 import { useEffect, useState } from "react";
 //@ts-expect-error react scale text não tem @types
 import ScaleText from "react-scale-text";
@@ -497,6 +498,23 @@ export default function Connectionspt(): JSX.Element {
     ) : (
         <div>
             <Toaster />
+            <Helmet>
+                <title>Conexões de {dateToMyString(selectedDate)}</title>
+                <link rel="canonical" href="https://mvg.lol/joguinhos/" />
+                <meta name="title" content={`Jogo das Conexões - by https://martinho.pt`}/>
+                <meta name="author" content="https://martinho.pt"/>
+                <meta name="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`}/>
+                <meta itemProp="name" content="https://mvg.lol - Conexões" />
+                <meta itemProp="author" content="https://martinho.pt" />
+                <meta itemProp="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+                <meta property="og:url" content="https://mvg.lol - Conexões" />
+                <meta property="og:type" content="website" />
+                <meta property="og:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+                <meta property="og:title" content={`Jogo das Conexões - by https://martinho.pt`} />
+                <meta property="twitter:card" content="summary_large_image" />
+                <meta property="twitter:title" content={`Jogo das Conexões - by https://martinho.pt`} />
+                <meta property="twitter:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+            </Helmet>
             <div className="gameTableParent">
                 <h1 style={{ marginTop: "12px", marginBottom: "0px" }}>
                     CONEXÕÕÕÕÕESSSS
@@ -609,7 +627,7 @@ export default function Connectionspt(): JSX.Element {
                             });
                             const str = `Conexões de ${dateToMyString(
                                 selectedDate
-                            )}\n${rows.join("\n")}\nJoga em https://mvg.lol/#/joguinhos`;
+                            )}\n${rows.join("\n")}\nJoga em https://mvg.lol/joguinhos`;
                             const blob = new Blob([str], { type: "text/plain" });
                             const data = [new ClipboardItem({ "text/plain": blob })];
                             navigator.clipboard
