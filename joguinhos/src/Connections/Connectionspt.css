@@ -91,8 +91,20 @@
     padding: 10px;
     border-style: none;
     font-size:14px;
-    cursor:pointer
+    cursor:pointer;
 }
+
+.buttonParents {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-left: 8px;
+}
+
+.connectionButton:first-child > .buttonParents { margin-right: auto; }
+
+.connectionButton:last-child  > .buttonParents { margin-left: auto; }
+
 .connectionButton:disabled {
     background-color: gainsboro;
     color: black;
