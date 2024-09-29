@@ -17,7 +17,6 @@ import { useEffect, useState } from "react";
 import ScaleText from "react-scale-text";
 import { User } from "firebase/auth";
 import toast, { Toaster } from "react-hot-toast";
-import { getToken, onMessage } from "firebase/messaging";
 import { myFirebase } from "../firebase/firebase";
 
 interface Category {
