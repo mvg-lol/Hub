@@ -688,18 +688,7 @@ export default function Connectionspt(): JSX.Element {
 
 function BotaoAtivarNotificacoes(): JSX.Element {
 
-    const requestPermission = () => {
-        console.log("Pedir Permissoes")
-        Notification.requestPermission().then((permission)=>{
-            if (permission === 'granted')
-                alert("Irás receber notificação sempre que houver um jogo novo!")
-            else if (permission === 'denied')
-                alert('Não estás a receber notificação quando houver um jogo novo :(')
-        }).catch((err)=>{
-            alert("Erro a pedir permissao")
-            console.log(err)
-        })
-    }
+    
 
     return (
         <div className="buttonParents" style={{ paddingBottom:'8px' }}>
@@ -707,21 +696,7 @@ function BotaoAtivarNotificacoes(): JSX.Element {
             className="connectionButton"
             onClick={(ev) => {
                 animateButton(AnimationTypes.Click, ev.currentTarget);
-                getToken(myFirebase.messaging, {vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY"})
-                .then((token)=>{
-                    if (token) {
-                        console.log("token ativo", token)
-                        
-                    } else {
-                        requestPermission();
-                    }
-                }).catch((err) => {
-                    console.log('An error occurred while retrieving token. ', err);
-                    // ...
-                });
-                onMessage(myFirebase.messaging, (payload)=> {
-                    console.log("message received", payload)
-                })
+                
             }}
             >
             Ativar notificações
