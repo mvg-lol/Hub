@@ -1,3 +1,4 @@
+//obrigado https://medium.com/@ali.tavafii/setting-up-firebase-cloud-messaging-for-web-push-notifications-client-side-guide-803257fa13ea
 importScripts(
     "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"
 );

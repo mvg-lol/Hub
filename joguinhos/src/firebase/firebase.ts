@@ -28,7 +28,7 @@ const messaging = getMessaging(firebaseApp);
 const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE => uidE === uid).length > 0
 
 
-
+// obrigado https://medium.com/@ali.tavafii/setting-up-firebase-cloud-messaging-for-web-push-notifications-client-side-guide-803257fa13ea
 export const activateNotifications = async function (window: Window & typeof globalThis) {
     const registerServiceWorker = async () => {
         try {
