@@ -7,11 +7,11 @@ import Three from './Threejs/Threejs.tsx'
 
 const router = createHashRouter([
   {
-    path: '/joguinhos',
+    path: '/',
     element:<Joguinhos/>
   },
   {
-    path: '/joguinhos/cubo',
+    path: '/cubo',
     element: <Three/>
   }
 ])
