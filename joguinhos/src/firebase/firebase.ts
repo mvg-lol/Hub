@@ -3,7 +3,7 @@ import { FirebaseOptions, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -30,10 +30,36 @@ const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE 
 navigator.serviceWorker.register('/joguinhos/firebase/firebase-messaging-sw.js')
     .then((registration)=>{
         console.log(messaging, registration, "boas")
-        //messaging.useServiceWorker(registration)
     })
     .catch((err)=>{
         console.log("erro", err)
+    })
+    const requestPermission = () => {
+        console.log("Pedir Permissoes")
+        Notification.requestPermission().then((permission)=>{
+            if (permission === 'granted')
+                alert("Irás receber notificação sempre que houver um jogo novo!")
+            else if (permission === 'denied')
+                alert('Não estás a receber notificação quando houver um jogo novo :(')
+        }).catch((err)=>{
+            alert("Erro a pedir permissao")
+            console.log(err)
+        })
+    }
+    getToken(messaging, {vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY"})
+    .then((token)=>{
+        if (token) {
+            console.log("token ativo", token)
+            
+        } else {
+            requestPermission();
+        }
+    }).catch((err) => {
+        console.log('An error occurred while retrieving token. ', err);
+        // ...
+    });
+    onMessage(messaging, (payload)=> {
+        console.log("message received", payload)
     })
 
 export const myFirebase = {
