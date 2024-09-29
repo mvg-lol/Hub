@@ -3,7 +3,7 @@ import { FirebaseOptions, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken, MessagePayload, Messaging, onMessage } from "firebase/messaging";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -24,44 +24,94 @@ const firebaseApp = initializeApp(firebaseConfig);
 const analytics = getAnalytics(firebaseApp);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-const messaging = getMessaging();
+const messaging = getMessaging(firebaseApp);
 const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE => uidE === uid).length > 0
 
-navigator.serviceWorker.register('/joguinhos/firebase-messaging-sw.js')
-    .then((registration)=>{
-        console.log(messaging, registration, "boas")
-    })
-    .catch((err)=>{
-        console.log("erro", err)
-    })
 
-const requestPermission = () => {
-    console.log("Pedir Permissoes")
-    Notification.requestPermission().then((permission)=>{
-        if (permission === 'granted')
-            alert("Irás receber notificação sempre que houver um jogo novo!")
-        else if (permission === 'denied')
-            alert('Não estás a receber notificação quando houver um jogo novo :(')
-    }).catch((err)=>{
-        alert("Erro a pedir permissao")
-        console.log(err)
-    })
-}
-getToken(messaging, {vapidKey: "BM5gIIdhEpJ9JhU1uijArmRduwPCd2VCHDBvQrGAoRHcWRR0ePRdhzq9IOfegAOnAc5tBIIS7mkr63IyxjV7SaY"})
-    .then((token)=>{
-        if (token) {
-            console.log("token ativo", token)
+
+export const activateNotifications = async function (window: Window & typeof globalThis) {
+    const registerServiceWorker = async () => {
+        try {
+            const swOptions: RegistrationOptions = {
+                type: "classic",
+                scope: "/",
+            };
+
+            const sw = await window.navigator.serviceWorker.register(`/joguinhos/firebase-messaging-sw.js`, swOptions);
+            await sw.update()
             
-        } else {
-            requestPermission();
+            return sw
+        } catch (error) {
+            // Oops. Registration was unsucessfull
+            console.error("Can not register service worker", error);
         }
-    }).catch((err) => {
-        console.log('An error occurred while retrieving token. ', err);
-        // ...
+    }; 
+    const requestPermission = async (messaging: Messaging) => {
+        try {
+            const permission = await window.Notification.requestPermission();
+
+            if (permission === "granted") {
+                const serviceWorkerRegistration = await registerServiceWorker();
+
+                return getToken(messaging, {
+                    serviceWorkerRegistration: serviceWorkerRegistration,
+                    vapidKey: "<YOUR_PUBLIC_VAPID_KEY_HERE>",
+                })
+                    .then((token) => {
+                        // Generated a new FCM token for the client
+                        // You can send it to server, e.g. fetch('your.server/subscribe', { token });
+                        // And store it for further usages (Server, LocalStorage, IndexedDB, ...)
+                        // For example:
+                        window.localStorage.setItem("fcm_token", token);
+                    })
+                    .catch((err) => {
+                        console.error("Unable to get FCM Token", err);
+                    });
+            } else {
+                console.error("Unable to grant permission", permission);
+            }
+        } catch (error) {
+            console.error("Unable to request permission", error);
+        }
+    };
+
+    const checkIfTokenIsNotGeneratedBefore = () =>
+        !window.localStorage.getItem("fcm_token");
+
+    if (checkIfTokenIsNotGeneratedBefore()) {
+        await requestPermission(messaging);
+    }
+
+    const showNotification = (payload: MessagePayload) => {
+        if (payload.data === undefined) {
+            console.log("payload.data undefined", payload)
+            return
+        }
+        const {
+            // It's better to send notifications as Data Message to handle it by your own SDK
+            // See https://firebase.google.com/docs/cloud-messaging/concept-options#notifications_and_data_messages
+            data: { title, body, actionUrl, icon },
+        } = payload;
+
+        // See https://developer.mozilla.org/docs/Web/API/Notification
+        const notificationOptions = {
+            body,
+            icon,
+        };
+        const notification = new window.Notification(title, notificationOptions);
+
+        notification.onclick = (event) => {
+            event.preventDefault(); // prevent the browser from focusing the Notification's tab
+            window.open(actionUrl, "_blank")?.focus();
+        };
+    };
+
+    // ...
+
+    onMessage(messaging, (payload) => {
+        showNotification(payload);
     });
-onMessage(messaging, (payload)=> {
-    console.log("message received", payload)
-})
+}
 
 export const myFirebase = {
     app: firebaseApp,
@@ -70,7 +120,7 @@ export const myFirebase = {
     db: db,
     messaging: messaging,
     userIsMartinho: userIsMartinho
-} 
+}
 
 export enum UIDsMartinho {
     Github = 'dkLZpTnrESPTGw5YbQuIdxsKFIm2',
