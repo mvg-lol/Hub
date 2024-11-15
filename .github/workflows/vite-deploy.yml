@@ -52,6 +52,8 @@ jobs:
               mv !(joguinhos|dist) dist/
       - name: mv
         run: 'mv ./joguinhos/dist ./dist/joguinhos'
+      - name: mv .well-known
+        run: 'mv './well-known ./dist/well-known'
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
