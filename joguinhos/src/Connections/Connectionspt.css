@@ -10,6 +10,9 @@
     text-align: center;
     display: flex;
     aspect-ratio: 1;
+    user-select: none;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
     /*font-size: 1vw; 1vw é 1% da width do browser
     font-size: calc(3px + 1vw);*/
     /*word-wrap: break-word;

@@ -285,7 +285,7 @@ export default function Connectionspt(): JSX.Element {
     };
 
     const removeSelection = () => {
-        const gameTable = document.getElementsByClassName("gameTable")[0]!;
+        const gameTable = document.getElementsByClassName("gameTable")[0];
         for (const child of gameTable.children) {
             const htmlChild = child as HTMLElement;
             if (!htmlChild.id.endsWith("guess"))
