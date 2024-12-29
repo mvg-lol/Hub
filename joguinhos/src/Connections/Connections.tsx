@@ -534,7 +534,7 @@ export default function Connectionspt(): JSX.Element {
                 {answers.length === 0 ? null : answers.map(convertGuessToHTML)}
                 <div className="gameTable">
                     {game === undefined && guessesMade.length === 0 ? (
-                        <h1>LOADING</h1>
+                        <h1>LOADING...</h1>
                     ) : game === undefined ? null : (
                         game.map(convertSelectedWordToTile)
                     )}
