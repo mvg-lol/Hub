@@ -125,5 +125,6 @@ export const myFirebase = {
 export enum UIDsMartinho {
     Github = 'dkLZpTnrESPTGw5YbQuIdxsKFIm2',
     Email = 'IvLqUzTDgefh29eaQ7Qf1lWoiVS2',
+    GithubVicente = '33wirV2uLFdV1eDdITiiSYs5zAH3',
 }
 
