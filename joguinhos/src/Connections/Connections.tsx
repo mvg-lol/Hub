@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { Helmet } from "react-helmet";
 import { useEffect, useState } from "react";
+import Modal from 'react-modal'
 //@ts-expect-error react scale text não tem @types
 import ScaleText from "react-scale-text";
 import { User } from "firebase/auth";
@@ -707,8 +708,32 @@ export default function Connectionspt(): JSX.Element {
 
 function BotaoAtivarNotificacoes(): JSX.Element {
 
-    
+    const [modalIsOpen, setIsOpen] = useState(false);
 
+    function openModal() {
+        setIsOpen(true);
+    }
+
+    function afterOpenModal() {
+    
+    }
+
+    function closeModal() {
+        setIsOpen(false);
+    }
+
+    const customStyles: Modal.Styles = {
+        content: {
+            top: '50%',
+            left: '50%',
+            right: 'auto',
+            bottom: 'auto',
+            marginRight: '-50%',
+            maxWidth:'400px',
+            transform: 'translate(-50%, -50%)',
+            alignContent:'center'
+        },
+    };
     return (
         <div className="buttonParents" style={{ paddingBottom:'8px' }}>
             <button
@@ -720,6 +745,39 @@ function BotaoAtivarNotificacoes(): JSX.Element {
             >
             Ativar notificações
             </button>
+            <button
+            className="connectionButton"
+            onClick={openModal}
+            >
+                Como Jogar
+            </button>
+            <Modal
+                isOpen={modalIsOpen}
+                onAfterOpen={afterOpenModal}
+                onRequestClose={closeModal}
+                contentLabel="Instrucoes"
+                style={customStyles}
+            >
+                    <h1>Como jogar</h1>
+                    <p style={{
+            textAlign: 'left',
+            justifyContent:'left'}}>
+                        - Existem 4 categorias: {colorToEmoji(Color.Yellow)}, {colorToEmoji(Color.Green)}, {colorToEmoji(Color.Blue)}, {colorToEmoji(Color.Purple)},
+                        <br></br>Sendo que o nível de dificuldade mais fácil é o {colorToEmoji(Color.Yellow)} e o mais difícil o {colorToEmoji(Color.Purple)}.
+                        <br></br><br></br>- Cada categoria tem 4 palavras associadas, deves escolhar 4 palavras que achas que pertencem ao mesmo grupo.
+                        <br></br><br></br>- Nunca serão categorias como "Estas 4 palavras acabam todos em ão" ou "Verbos", mas sim algo como "Palavras associadas aos descobrimentos".
+                        <br></br><br></br>- Por exemplo: Palavras associadas aos descobrimentos: Caravela, Lusíadas, Esfera Armilar, Mar
+                    </p>
+                    <center>
+                    <button
+                    className="connectionButton"
+                    onClick={closeModal}
+                    >
+                        Fechar
+                    </button>
+                    </center>
+                    
+                </Modal>
         </div>
     )
 }
