@@ -1031,6 +1031,7 @@ function ScriptInserirConnections(
                                 setCustomDate(dateToMyString(parsedDate, true));
                             } else setCustomDate("");
                         } catch (error) {
+                            console.error(error)
                             setCustomDate("");
                         }
                     }}
