@@ -19,7 +19,7 @@ import Modal from 'react-modal'
 import ScaleText from "react-scale-text";
 import { User } from "firebase/auth";
 import toast, { Toaster } from "react-hot-toast";
-import { activateNotifications, myFirebase } from "../firebase/firebase";
+import { activateNotifications, myFirebase, UIDsMartinho } from "../firebase/firebase";
 
 interface Category {
     title: string;
@@ -30,6 +30,7 @@ interface FirebaseWords {
     green: Category;
     blue: Category;
     purple: Category;
+    author: string;
 }
 interface FirebaseWordsWithDate {
     data: FirebaseWords;
@@ -80,6 +81,7 @@ const firebaseWordsConverter: FirestoreDataConverter<
             purple: modelObject.purple,
             blue: modelObject.blue,
             green: modelObject.green,
+            author: modelObject.author
         };
     },
     fromFirestore(
@@ -92,6 +94,7 @@ const firebaseWordsConverter: FirestoreDataConverter<
             purple: data.purple,
             green: data.green,
             blue: data.blue,
+            author: data.author
         };
     },
 };
@@ -211,6 +214,7 @@ export default function Connectionspt(): JSX.Element {
                     title: "Parabenizar",
                     words: ["congratular", "felicitar", "saudar", "salvar"],
                 },
+                author: UIDsMartinho.Github
             };
             const q = query(collection(myFirebase.db, "connections"));
             const querySnapshot = await getDocs(q);
@@ -261,6 +265,7 @@ export default function Connectionspt(): JSX.Element {
     const [numberOfGuessesLeft, setNumberOfGuessesLeft] = useState(4);
     const [guessesMade, setGuessesMade] = useState<GuessMade[]>([]);
     const [answers, setAnswers] = useState<GuessMade[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(userMartinho !== null);
 
     const addOrRemoveSelectedWord = (selectedWord: SelectedWord) => {
         const element = document.getElementById(selectedWord.idString)!;
@@ -494,219 +499,226 @@ export default function Connectionspt(): JSX.Element {
         );
     };
 
-    return userMartinho !== null ? (
-        <ScriptInserirConnections martinho={userMartinho} />
-    ) : (
+    return (
         <div>
-            <Toaster />
-            <Helmet>
-                <title>Conexões de {dateToMyString(selectedDate)}</title>
-                <link rel="canonical" href="https://mvg.lol/joguinhos/" />
-                <meta name="title" content={`Jogo das Conexões - by https://martinho.pt`}/>
-                <meta name="author" content="https://martinho.pt"/>
-                <meta name="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`}/>
-                <meta itemProp="name" content="https://mvg.lol - Conexões" />
-                <meta itemProp="author" content="https://martinho.pt" />
-                <meta itemProp="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
-                <meta property="og:url" content="https://mvg.lol - Conexões" />
-                <meta property="og:type" content="website" />
-                <meta property="og:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
-                <meta property="og:title" content={`Jogo das Conexões - by https://martinho.pt`} />
-                <meta property="twitter:card" content="summary_large_image" />
-                <meta property="twitter:title" content={`Jogo das Conexões - by https://martinho.pt`} />
-                <meta property="twitter:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
-            </Helmet>
-            <div className="gameTableParent">
-                <h1 style={{ marginTop: "12px", marginBottom: "0px" }}>
-                    CONEXÕÕÕÕÕESSSS
-                </h1>
-                <p
-                    style={{
-                        fontSize: "8px",
-                        marginTop: "4px",
-                        marginBottom: "16px",
-                        textAlign: "center",
-                    }}
-                >
-                    im connectinggggggggggggggggggg
-                </p>
-                <BotaoAtivarNotificacoes/>
-
-                {answers.length === 0 ? null : answers.map(convertGuessToHTML)}
-                <div className="gameTable">
-                    {game === undefined && guessesMade.length === 0 ? (
-                        <h1>LOADING...</h1>
-                    ) : game === undefined ? null : (
-                        game.map(convertSelectedWordToTile)
-                    )}
-                </div>
-                <p
-                    style={{
-                        fontWeight: "bold",
-                        fontSize: 24,
-                        textAlign: "center",
-                        marginTop: "16px",
-                        marginBottom: "12px",
-                    }}
-                >
-                    Tentativas restantes: {numberOfGuessesLeft}
-                </p>
-                <div className="animateClick teste">swag</div>
-            </div>
-            <div
-                id="divBotoesConnections"
-                className="buttonParents"
-            >
-                <button
-                    className="connectionButton"
-                    onClick={(ev) => {
-                        animateButton(AnimationTypes.Click, ev.currentTarget);
-                        if (selectedWords.length === 4)
-                            performPostEvaluateLogic(evaluateSubmission());
-                    }}
-                    disabled={selectedWords.length !== 4}
-                >
-                    Submeter
-                </button>
-                <button
-                    className="connectionButton"
-                    onClick={(ev) => {
-                        animateButton(AnimationTypes.Click, ev.currentTarget);
-                        removeSelection();
-                    }}
-                    disabled={selectedWords.length === 0}
-                >
-                    Remover seleção
-                </button>
-                <button
-                    className="connectionButton"
-                    onClick={(ev) => {
-                        animateButton(AnimationTypes.Click, ev.currentTarget);
-                        if (game) setGame(shuffleArray(game, true)! as SelectedWord[]);
-                    }}
-                >
-                    Shuffle
-                </button>
-            </div>
-            {numberOfGuessesLeft <= 0 || game?.length === 0 ? (
-                <div className="guessGridResult" style={{ paddingTop: "16px" }}>
-                    {guessesMade.map((guess) => {
-                        const words = guess.guess;
-                        const row = words.map((word) => {
-                            return (
-                                <div
-                                    key={word.idString}
-                                    className="guessSquare"
-                                    style={{ background: word.word.color }}
-                                ></div>
-                            );
-                        });
-                        return (
-                            <div
-                                key={
-                                    guess.wasSuccessful +
-                                    guess.guess.map((x) => x.word.word).join("")
-                                }
-                                className="guessSquareLine"
-                            >
-                                {row}
-                            </div>
-                        );
-                    })}
-                    &nbsp;
-                    <button
-                        className="connectionButton"
-                        onClick={(ev) => {
-                            animateButton(AnimationTypes.Click, ev.currentTarget);
-                            const rows: string[] = [];
-                            guessesMade.forEach((guess) => {
-                                let str = "";
-                                guess.guess.forEach((val) => {
-                                    str = str + colorToEmoji(val.word.color);
-                                });
-                                rows.push(str);
-                            });
-                            const str = `Conexões de ${dateToMyString(
-                                selectedDate
-                            )}\n${rows.join("\n")}\nJoga em https://mvg.lol/joguinhos`;
-                            const blob = new Blob([str], { type: "text/plain" });
-                            const data = [new ClipboardItem({ "text/plain": blob })];
-                            navigator.clipboard
-                                .write(data)
-                                .then(() => {
-                                    console.log("wrotten");
-                                    showToast("Copiado!", "📋");
-                                })
-                                .catch((err) => console.log("not wrotten", err));
-                        }}
-                    >
-                        Partilhar
-                    </button>
-                </div>
-            ) : null}
-            <div
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    flexDirection: "column",
-                    paddingTop: "12px",
-                }}
-            >
-                Escolhe outro jogo:{" "}
-                {/*<button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button>*/}
-                {gameDatesAvailable /*.slice(paginateGames, paginateGames+10)*/
-                    .map((val) => {
-                        const date = dateToMyString(val.date);
-                        let addDone = false;
-                        let result = "";
-                        if (localStorage.getItem(`connection${date}`) !== null) {
-                            addDone = true;
-                            const guesses = JSON.parse(
-                                localStorage.getItem(`connection${date}`)!
-                            ) as GuessMade[];
-                            if (guesses.filter((val) => val.wasSuccessful).length === 4)
-                                result = "y";
-                            else result = "n";
-                        }
-                        return (
-                            <button
-                                disabled={val.date === selectedDate}
-                                onClick={() => {
-                                    const game = val.game;
-                                    setFirebaseWords(game);
-                                    setGame(getScrambledWordsFromGame(game));
-                                    setNumberOfGuessesLeft(4);
-                                    setAnswers([]);
-                                    setSelectedDate(val.date);
-                                    setGuessesMade([]);
-                                    setSelectedWords([]);
+            {(isSubmitting) ? (<button className="connectionButton" onClick={()=> {if(userMartinho !== null) setIsSubmitting(!isSubmitting)}}>Trocar view</button>) : null}
+            {
+                (isSubmitting && userMartinho !== null) ? (
+                    <ScriptInserirConnections martinho={userMartinho} />
+                ) : (
+                    <div>
+                        <Toaster />
+                        <Helmet>
+                            <title>Conexões de {dateToMyString(selectedDate)}</title>
+                            <link rel="canonical" href="https://mvg.lol/joguinhos/" />
+                            <meta name="title" content={`Jogo das Conexões - by https://martinho.pt`}/>
+                            <meta name="author" content="https://martinho.pt"/>
+                            <meta name="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`}/>
+                            <meta itemProp="name" content="https://mvg.lol - Conexões" />
+                            <meta itemProp="author" content="https://martinho.pt" />
+                            <meta itemProp="description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+                            <meta property="og:url" content="https://mvg.lol - Conexões" />
+                            <meta property="og:type" content="website" />
+                            <meta property="og:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+                            <meta property="og:title" content={`Jogo das Conexões - by https://martinho.pt`} />
+                            <meta property="twitter:card" content="summary_large_image" />
+                            <meta property="twitter:title" content={`Jogo das Conexões - by https://martinho.pt`} />
+                            <meta property="twitter:description" content={`Jogo das Conexões - dia ${dateToMyString(selectedDate)}`} />
+                        </Helmet>
+                        <div className="gameTableParent">
+                            <h1 style={{ marginBottom: "0px" }}>
+                                CONEXÕÕÕÕÕESSSS
+                            </h1>
+                            <p
+                                style={{
+                                    fontSize: "8px",
+                                    marginTop: "4px",
+                                    marginBottom: "16px",
+                                    textAlign: "center",
                                 }}
-                                key={val.date.toString()}
-                                style={{ marginTop: "12px" }}
-                                className="connectionButton"
                             >
-                                {date
-                                    .replaceAll("-", "/")
-                                    .concat(
-                                        addDone
-                                            ? result === "y"
-                                                ? " ✅"
-                                                : result === "n"
-                                                    ? " ❎"
-                                                    : ""
-                                            : ""
-                                    )}
+                                im connectinggggggggggggggggggg
+                            </p>
+                            <BotaoAtivarNotificacoes trocarViewFunc={(userMartinho== null || !myFirebase.userIsMartinho(userMartinho.uid)) ? null : ()=>{setIsSubmitting(!isSubmitting)}}/>
+                            {answers.length === 0 ? null : answers.map(convertGuessToHTML)}
+                            <div className="gameTable">
+                                {game === undefined && guessesMade.length === 0 ? (
+                                    <h1>LOADING...</h1>
+                                ) : game === undefined ? null : (
+                                    game.map(convertSelectedWordToTile)
+                                )}
+                            </div>
+                            <p
+                                style={{
+                                    fontWeight: "bold",
+                                    fontSize: 24,
+                                    textAlign: "center",
+                                    marginTop: "16px",
+                                    marginBottom: "12px",
+                                }}
+                            >
+                                Tentativas restantes: {numberOfGuessesLeft}
+                            </p>
+                            <div className="animateClick teste">swag</div>
+                        </div>
+                        <div
+                            id="divBotoesConnections"
+                            className="buttonParents"
+                        >
+                            <button
+                                className="connectionButton"
+                                onClick={(ev) => {
+                                    animateButton(AnimationTypes.Click, ev.currentTarget);
+                                    if (selectedWords.length === 4)
+                                        performPostEvaluateLogic(evaluateSubmission());
+                                }}
+                                disabled={selectedWords.length !== 4}
+                            >
+                                Submeter
                             </button>
-                        );
-                    })}
-            </div>
+                            <button
+                                className="connectionButton"
+                                onClick={(ev) => {
+                                    animateButton(AnimationTypes.Click, ev.currentTarget);
+                                    removeSelection();
+                                }}
+                                disabled={selectedWords.length === 0}
+                            >
+                                Remover seleção
+                            </button>
+                            <button
+                                className="connectionButton"
+                                onClick={(ev) => {
+                                    animateButton(AnimationTypes.Click, ev.currentTarget);
+                                    if (game) setGame(shuffleArray(game, true)! as SelectedWord[]);
+                                }}
+                            >
+                                Shuffle
+                            </button>
+                        </div>
+                        <p className="buttonParents">Feito por: <div style={{fontWeight:'bold'}}>{firebaseWords?.author == null ? "martinho.pt" : userMartinho?.displayName}</div></p>
+                        {numberOfGuessesLeft <= 0 || game?.length === 0 ? (
+                            <div className="guessGridResult" style={{ paddingTop: "16px" }}>
+                                {guessesMade.map((guess) => {
+                                    const words = guess.guess;
+                                    const row = words.map((word) => {
+                                        return (
+                                            <div
+                                                key={word.idString}
+                                                className="guessSquare"
+                                                style={{ background: word.word.color }}
+                                            ></div>
+                                        );
+                                    });
+                                    return (
+                                        <div
+                                            key={
+                                                guess.wasSuccessful +
+                                                guess.guess.map((x) => x.word.word).join("")
+                                            }
+                                            className="guessSquareLine"
+                                        >
+                                            {row}
+                                        </div>
+                                    );
+                                })}
+                                &nbsp;
+                                <button
+                                    className="connectionButton"
+                                    onClick={(ev) => {
+                                        animateButton(AnimationTypes.Click, ev.currentTarget);
+                                        const rows: string[] = [];
+                                        guessesMade.forEach((guess) => {
+                                            let str = "";
+                                            guess.guess.forEach((val) => {
+                                                str = str + colorToEmoji(val.word.color);
+                                            });
+                                            rows.push(str);
+                                        });
+                                        const str = `Conexões de ${dateToMyString(
+                                            selectedDate
+                                        )}\n${rows.join("\n")}\nJoga em https://mvg.lol/joguinhos`;
+                                        const blob = new Blob([str], { type: "text/plain" });
+                                        const data = [new ClipboardItem({ "text/plain": blob })];
+                                        navigator.clipboard
+                                            .write(data)
+                                            .then(() => {
+                                                console.log("wrotten");
+                                                showToast("Copiado!", "📋");
+                                            })
+                                            .catch((err) => console.log("not wrotten", err));
+                                    }}
+                                >
+                                    Partilhar
+                                </button>
+                            </div>
+                        ) : null}
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                flexDirection: "column",
+                                paddingTop: "12px",
+                            }}
+                        >
+                            Escolhe outro jogo:{" "}
+                            {/*<button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button>*/}
+                            {gameDatesAvailable /*.slice(paginateGames, paginateGames+10)*/
+                                .map((val) => {
+                                    const date = dateToMyString(val.date);
+                                    let addDone = false;
+                                    let result = "";
+                                    if (localStorage.getItem(`connection${date}`) !== null) {
+                                        addDone = true;
+                                        const guesses = JSON.parse(
+                                            localStorage.getItem(`connection${date}`)!
+                                        ) as GuessMade[];
+                                        if (guesses.filter((val) => val.wasSuccessful).length === 4)
+                                            result = "y";
+                                        else result = "n";
+                                    }
+                                    return (
+                                        <button
+                                            disabled={val.date === selectedDate}
+                                            onClick={() => {
+                                                const game = val.game;
+                                                setFirebaseWords(game);
+                                                setGame(getScrambledWordsFromGame(game));
+                                                setNumberOfGuessesLeft(4);
+                                                setAnswers([]);
+                                                setSelectedDate(val.date);
+                                                setGuessesMade([]);
+                                                setSelectedWords([]);
+                                            }}
+                                            key={val.date.toString()}
+                                            style={{ marginTop: "12px" }}
+                                            className="connectionButton"
+                                        >
+                                            {date
+                                                .replaceAll("-", "/")
+                                                .concat(
+                                                    addDone
+                                                        ? result === "y"
+                                                            ? " ✅"
+                                                            : result === "n"
+                                                                ? " ❎"
+                                                                : ""
+                                                        : ""
+                                                )}
+                                        </button>
+                                    );
+                                })}
+                        </div>
+                    </div>
+                )
+            }
         </div>
     );
 }
 
 
-function BotaoAtivarNotificacoes(): JSX.Element {
+function BotaoAtivarNotificacoes(props:{ trocarViewFunc: (() => void) | null; }): JSX.Element {
 
     const [modalIsOpen, setIsOpen] = useState(false);
 
@@ -751,6 +763,16 @@ function BotaoAtivarNotificacoes(): JSX.Element {
             >
                 Como Jogar
             </button>
+            {
+                props.trocarViewFunc != null ?
+                (<button
+                className="connectionButton"
+                onClick={props.trocarViewFunc}
+                >
+                    Trocar View
+                </button>)
+                : null
+            }
             <Modal
                 isOpen={modalIsOpen}
                 onAfterOpen={afterOpenModal}
@@ -836,6 +858,7 @@ function ScriptInserirConnections(
             blue: blueWords,
             green: greenWords,
             purple: purpleWords,
+            author: props.martinho.displayName ?? "Martinho"
         };
     };
 

@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, UserCredential, GithubAuthProvider } from 'firebase/auth';
+import { /*createUserWithEmailAndPassword, signInWithEmailAndPassword,*/ signInWithPopup, signOut, UserCredential, GithubAuthProvider, updateProfile } from 'firebase/auth';
 import './Login.css'
 import 'firebaseui/dist/firebaseui.css'
 import { useEffect, useState } from 'react';
@@ -18,7 +18,8 @@ function EmailPasswordLoginComponent(): JSX.Element {
     const [isCriarConta, setIsCriarConta] = useState(false)
     const [password, setPassword] = useState('')
     const [email, setEmail] = useState('')
-    const criarContaFn = () => {
+    const [displayName, setDisplayName] = useState('')
+    /*const criarContaFn = () => {
         createUserWithEmailAndPassword(myFirebase.auth, email, password)
             .then((userCredential) => {
                 console.log("created account", userCredential)
@@ -38,7 +39,7 @@ function EmailPasswordLoginComponent(): JSX.Element {
                 console.log("error signing in ", error)
                 console.log(error.message, error.code)
             });
-    }
+    }*/
 
     return (<fieldset>
         <legend>{LoginToBeUsedEnum.EmailPassword} Login</legend>
@@ -47,9 +48,10 @@ function EmailPasswordLoginComponent(): JSX.Element {
         </p>
         <button onClick={()=>console.log(password, email, isCriarConta)}>teste state</button>
         <div>
+            Display name: <input value={displayName} type='text' onChange={(e)=>setDisplayName(e.target.value)}/>
             Email: <input value={email} type='text' onChange={(e)=>setEmail(e.target.value)}/>
             Password: <input value={password} type='password' onChange={(e)=>setPassword(e.target.value)}/> 
-            <button onClick={() => isCriarConta ? criarContaFn() : loginFn()}>Submeter</button>
+            {/*<button onClick={() => isCriarConta ? criarContaFn() : loginFn()}>Submeter</button>*/}
             
         </div> 
     </fieldset>)
@@ -85,7 +87,7 @@ function GithubLoginComponent(props:Readonly<PropsLoginComponent>): JSX.Element 
     return (
         <fieldset>
             <legend>{LoginToBeUsedEnum.Github} Login</legend>
-            <button onClick={()=>{
+            <button disabled={myFirebase.auth.currentUser !== null} onClick={()=>{
                 login()
             }}>GITHUB LOGIN</button>
         </fieldset>
@@ -100,6 +102,22 @@ enum LoginToBeUsedEnum {
 export default function Login(): JSX.Element {
     const [loginToBeUsed, setLoginToBeUsed] = useState<LoginToBeUsedEnum>(LoginToBeUsedEnum.Github)
     const [isSuccessfulLogin, setIsSuccessfulLogin] = useState<{isSuccess?: boolean, message?: string}>({})
+    const [displayName, setDisplayName] = useState('')
+    
+    const updateUserDisplayName = () => {
+        updateProfile(myFirebase.auth.currentUser!,{displayName:displayName})
+        .then(()=>{
+            const div = document.getElementById("resultDiv");
+            if (div !== null)
+                div.innerHTML = div?.innerHTML + "<br>Sucesso a updatar";
+        })
+        .catch((err)=>{
+            console.error(err)
+            const div = document.getElementById("resultDiv");
+            if (div !== null)
+                div.innerHTML = div?.innerHTML + "<br>Erro a updatar, ver consola";
+        })
+    }
     const determineLoginComponentToBeUsed = () => {
         switch(loginToBeUsed) {
             case LoginToBeUsedEnum.EmailPassword: return (<EmailPasswordLoginComponent/>)
@@ -141,9 +159,15 @@ export default function Login(): JSX.Element {
             isSuccessfulLogin.isSuccess === undefined ? 
                 null
                 :
-                <div>
+                <div id="resultDiv">
                     <h4>{isSuccessfulLogin.isSuccess ? 'Login com successo' : 'Login sem sucesso'}</h4>
                     {isSuccessfulLogin.isSuccess === false ? <p>{isSuccessfulLogin.message}</p> : null}
+                    {isSuccessfulLogin.isSuccess ?(
+                        <>
+                        Display name: <input value={displayName} type='text' onChange={(e)=>setDisplayName(e.target.value)}/><br></br>
+                        <button onClick={()=>updateUserDisplayName()}>Update Display Name</button>
+                        </>
+                    ) : null}
                 </div>
         }
     </>)
