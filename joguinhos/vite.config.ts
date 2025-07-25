@@ -9,7 +9,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         "main": "./index.html",
-        "firebase-messaging-sw": "./src/firebase/firebase-messaging-sw.js",
       },
       output: {
         entryFileNames: (chunkInfo) => {
