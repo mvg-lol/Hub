@@ -1,13 +1,11 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Connectionspt from "./Connections/Connections";
 import Three from "./Threejs/Threejs";
 import Login from "./Login/Login";
-import Codenames from "./Codenames/Codenames";
 
 enum Game {
-    Codenames = 'codenames',
-    Connections = 'connections',
     Login = 'login',
+    Connections = 'connections',
     Cubo = 'cubo',
 }
 
@@ -16,8 +14,6 @@ export default function Joguinhos(): JSX.Element {
     console.log("teste joguinhos", game);
 
     switch (game) {
-        case Game.Codenames:
-            return <Codenames />;
         case Game.Connections:
             return <Connectionspt />;
         case Game.Cubo:
@@ -28,12 +24,17 @@ export default function Joguinhos(): JSX.Element {
             return (
                 <div>
                     <h1>Joguinhos</h1>
-                    <p>Selecione um jogo para jogar!</p>
-                    {Object.values(Game).map((game) => (
-                        <p key={game}>
-                            <a href={`/joguinhos/${game}`}>{game}</a>
-                        </p>
-                    ))}
+                    <p>Selecione um</p>
+                    <ul>
+                        {Object.values(Game).map((game) => (
+                            <li key={game}>
+                                <Link to={`${game}`}>
+                                    {game.charAt(0).toUpperCase() + game.slice(1)}
+                                    { game === Game.Connections ? ' (mais fixe)' : ''}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             );
     }

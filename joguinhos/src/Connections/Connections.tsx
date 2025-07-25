@@ -193,8 +193,10 @@ export default function Connectionspt(): JSX.Element {
                 },
                 author: UIDsMartinho.Github
             };
+            
             const q = await supabase.from('connections')
-                .select('*').eq('date', dateToMyString(selectedDate, true)).single();
+                .select('*').order('id', { ascending: false }).limit(1).single();
+
             if (!q.error) {
                 const data = q.data;
                 const split = data.id.split("-");
@@ -202,11 +204,13 @@ export default function Connectionspt(): JSX.Element {
                 game = selectToGame(data);
                 setSelectedDate(date);
                 const qd = await supabase.from('connections')
-                    .select('id').neq('date', dateToMyString(selectedDate, true))
+                    .select('id').neq('id', data.id)
                 const dates = qd.data!.map((val) => {const d = val.id.split("-"); return new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]))})
+                dates.push(date);
                 setGameDatesAvailable(dates.reverse());
+            } else {
+                console.error("Error fetching connections:", q.error);
             }
-            //}
             setFirebaseWords(game);
             setGame(getScrambledWordsFromGame(game));
         }
@@ -221,7 +225,7 @@ export default function Connectionspt(): JSX.Element {
         .catch((err) => {
             console.error("Error fetching user:", err);
         });
-    }, [selectedDate]);
+    }, []);
     const showToast = (msg: string, emoji: "📋" | "🤏" | undefined) => {
         toast(msg, {
             duration: 3000,
@@ -565,7 +569,7 @@ export default function Connectionspt(): JSX.Element {
                                 Shuffle
                             </button>
                         </div>
-                        <p className="buttonParents">Feito por: <div style={{fontWeight:'bold'}}>{firebaseWords?.author == undefined ? "martinho.pt" : getUserDisplayName(userMartinho)}</div></p>
+                        <p className="buttonParents">Feito por: <div style={{fontWeight:'bold'}}>{firebaseWords?.author == undefined ? "martinho.pt" : firebaseWords.author}</div></p>
                         {numberOfGuessesLeft <= 0 || game?.length === 0 ? (
                             <div className="guessGridResult" style={{ paddingTop: "16px" }}>
                                 {guessesMade.map((guess) => {
@@ -652,7 +656,7 @@ export default function Connectionspt(): JSX.Element {
                                             disabled={val === selectedDate}
                                             onClick={async () => {
                                                 const connection = await supabase.from('connections')
-                                                    .select('*').eq('id',date).single()
+                                                    .select('*').eq('id',dateToMyString(val, true)).limit(1).single()
                                                 const game = selectToGame(connection.data!);
                                                 setFirebaseWords(game);
                                                 setGame(getScrambledWordsFromGame(game));
