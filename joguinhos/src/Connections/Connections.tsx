@@ -1,40 +1,24 @@
 import "./Connectionspt.css";
-import {
-    collection,
-    doc,
-    DocumentData,
-    documentId,
-    FirestoreDataConverter,
-    getDocs,
-    orderBy,
-    query,
-    QueryDocumentSnapshot,
-    setDoc,
-    SnapshotOptions,
-} from "firebase/firestore";
 import { Helmet } from "react-helmet";
 import { useEffect, useState } from "react";
 import Modal from 'react-modal'
 //@ts-expect-error react scale text não tem @types
 import ScaleText from "react-scale-text";
-import { User } from "firebase/auth";
 import toast, { Toaster } from "react-hot-toast";
-import { activateNotifications, myFirebase, UIDsMartinho } from "../firebase/firebase";
+import supabase, { getUserDisplayName, UIDsMartinho, userIsMartinho } from "../supabase/supabase";
+import { Tables } from "../database.types";
+import { User } from "@supabase/supabase-js";
 
 interface Category {
     title: string;
     words: string[];
 }
-interface FirebaseWords {
+interface WordCategories {
     yellow: Category;
     green: Category;
     blue: Category;
     purple: Category;
     author: string;
-}
-interface FirebaseWordsWithDate {
-    data: FirebaseWords;
-    dateObj: Date;
 }
 enum Color {
     Yellow = "#FBEC72",
@@ -71,34 +55,6 @@ enum AnimationTypes {
     Click = "animateClick",
 }
 
-const firebaseWordsConverter: FirestoreDataConverter<
-    FirebaseWords,
-    FirebaseWords
-> = {
-    toFirestore(modelObject: FirebaseWords): FirebaseWords {
-        return {
-            yellow: modelObject.yellow,
-            purple: modelObject.purple,
-            blue: modelObject.blue,
-            green: modelObject.green,
-            author: modelObject.author
-        };
-    },
-    fromFirestore(
-        snapshot: QueryDocumentSnapshot<DocumentData, DocumentData>,
-        options?: SnapshotOptions
-    ): FirebaseWords {
-        const data = snapshot.data(options);
-        return {
-            yellow: data.yellow,
-            purple: data.purple,
-            green: data.green,
-            blue: data.blue,
-            author: data.author
-        };
-    },
-};
-
 function shuffleArray(array: unknown[], returnNewArray: boolean = false) {
     const auxArray = returnNewArray ? Array.from(array) : array;
     for (let i = auxArray.length - 1; i > 0; i--) {
@@ -108,7 +64,7 @@ function shuffleArray(array: unknown[], returnNewArray: boolean = false) {
     return returnNewArray ? auxArray : null;
 }
 
-function getScrambledWordsFromGame(game: FirebaseWords): SelectedWord[] {
+function getScrambledWordsFromGame(game: WordCategories): SelectedWord[] {
     const wordList: Word[] = [];
     for (const word of game.blue.words) {
         wordList.push({ word: word, color: Color.Blue });
@@ -181,12 +137,33 @@ export default function Connectionspt(): JSX.Element {
     const onHoverWordColor = "aliceblue";
     const [game, setGame] = useState<SelectedWord[]>();
     const [userMartinho, setUserMartinho] = useState<User | null>(null);
-    const [firebaseWords, setFirebaseWords] = useState<FirebaseWords>();
-    const [gameDatesAvailable, setGameDatesAvailable] = useState<
-        { date: Date; game: FirebaseWords }[]
-    >([]);
+    const [firebaseWords, setFirebaseWords] = useState<WordCategories>();
+    const [gameDatesAvailable, setGameDatesAvailable] = useState<Date[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     //const [paginateGames, setPaginateGames] = useState<number>(0)
+
+    const selectToGame = (data: Tables<'connections'>) => {
+        return {
+            green: {
+                title: data.green_title!,
+                words: data.green_words!.split("||")
+            },
+            purple: {
+                title: data.purple_title!,
+                words: data.purple_words!.split("||")
+            },
+            blue: {
+                title: data.blue_title!,
+                words: data.blue_words!.split("||")
+            },
+            yellow: {
+                title: data.yellow_title!,
+                words: data.yellow_words!.split("||")
+            },
+            author: data.author!
+        }
+    }
+
     useEffect(() => {
         for (let i = 0; i < localStorage.length; i++) {
             // remover entradas bugadas
@@ -197,7 +174,7 @@ export default function Connectionspt(): JSX.Element {
             }
         }
         async function getConnections() {
-            let game: FirebaseWords = {
+            let game: WordCategories = {
                 green: {
                     title: "Sinónimos de Lindo",
                     words: ["bonito", "elegante", "deslumbrante", "vistoso"],
@@ -216,43 +193,35 @@ export default function Connectionspt(): JSX.Element {
                 },
                 author: UIDsMartinho.Github
             };
-            const q = query(collection(myFirebase.db, "connections"));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-                const dates: { date: Date; game: FirebaseWords }[] = [
-                    { date: new Date(2001, 7 - 1, 7), game },
-                ];
-                const now = new Date(Date.now());
-                const res = querySnapshot.docs
-                    .map((val) => {
-                        const split = val.id.split("-").map((val) => parseInt(val));
-                        const obj = {
-                            date: new Date(split[0], split[1] - 1, split[2]),
-                            game: val.data() as FirebaseWords,
-                        };
-                        dates.push(obj);
-                        return obj;
-                    })
-                    .filter((val) => val.date <= now)
-                    .reduce((a, b) => (a.date > b.date ? a : b));
-                game = res.game;
-                setSelectedDate(res.date);
-                setGameDatesAvailable(dates.filter((val) => val.date <= now).reverse());
+            const q = await supabase.from('connections')
+                .select('*').eq('date', dateToMyString(selectedDate, true)).single();
+            if (!q.error) {
+                const data = q.data;
+                const split = data.id.split("-");
+                const date = new Date(parseInt(split[0]), parseInt(split[1]) - 1, parseInt(split[2]));
+                game = selectToGame(data);
+                setSelectedDate(date);
+                const qd = await supabase.from('connections')
+                    .select('id').neq('date', dateToMyString(selectedDate, true))
+                const dates = qd.data!.map((val) => {const d = val.id.split("-"); return new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]))})
+                setGameDatesAvailable(dates.reverse());
             }
             //}
             setFirebaseWords(game);
             setGame(getScrambledWordsFromGame(game));
         }
         getConnections();
-        //console.log(game)
-        myFirebase.auth.onAuthStateChanged((user) => {
-            if (user !== null && myFirebase.userIsMartinho(user.uid)) {
-                setUserMartinho(user);
+        supabase.auth.getUser().then(({ data }) => { 
+            if (data.user !== null && userIsMartinho(data.user.id)) {
+                setUserMartinho(data.user);
             } else {
                 setUserMartinho(null);
             }
+        })
+        .catch((err) => {
+            console.error("Error fetching user:", err);
         });
-    }, []);
+    }, [selectedDate]);
     const showToast = (msg: string, emoji: "📋" | "🤏" | undefined) => {
         toast(msg, {
             duration: 3000,
@@ -539,7 +508,7 @@ export default function Connectionspt(): JSX.Element {
                             >
                                 im connectinggggggggggggggggggg
                             </p>
-                            <BotaoAtivarNotificacoes trocarViewFunc={(userMartinho== null || !myFirebase.userIsMartinho(userMartinho.uid)) ? null : ()=>{setIsSubmitting(!isSubmitting)}}/>
+                            <BotaoAtivarNotificacoes trocarViewFunc={(userMartinho== null || !userIsMartinho(userMartinho.id)) ? null : ()=>{setIsSubmitting(!isSubmitting)}}/>
                             {answers.length === 0 ? null : answers.map(convertGuessToHTML)}
                             <div className="gameTable">
                                 {game === undefined && guessesMade.length === 0 ? (
@@ -596,7 +565,7 @@ export default function Connectionspt(): JSX.Element {
                                 Shuffle
                             </button>
                         </div>
-                        <p className="buttonParents">Feito por: <div style={{fontWeight:'bold'}}>{firebaseWords?.author == null ? "martinho.pt" : userMartinho?.displayName}</div></p>
+                        <p className="buttonParents">Feito por: <div style={{fontWeight:'bold'}}>{firebaseWords?.author == undefined ? "martinho.pt" : getUserDisplayName(userMartinho)}</div></p>
                         {numberOfGuessesLeft <= 0 || game?.length === 0 ? (
                             <div className="guessGridResult" style={{ paddingTop: "16px" }}>
                                 {guessesMade.map((guess) => {
@@ -666,7 +635,7 @@ export default function Connectionspt(): JSX.Element {
                             {/*<button className='connectionButton' disabled={paginateGames === 0 } onClick={()=>{if(paginateGames > 10) setPaginateGames(paginateGames-10); console.log(paginateGames)}}>Anteriores</button> <button className='connectionButton' disabled={paginateGames<=gameDatesAvailable.length} onClick={()=>{if(paginateGames<=gameDatesAvailable.length)setPaginateGames(paginateGames+10); console.log(paginateGames)}}>Seguintes</button>*/}
                             {gameDatesAvailable /*.slice(paginateGames, paginateGames+10)*/
                                 .map((val) => {
-                                    const date = dateToMyString(val.date);
+                                    const date = dateToMyString(val);
                                     let addDone = false;
                                     let result = "";
                                     if (localStorage.getItem(`connection${date}`) !== null) {
@@ -680,18 +649,20 @@ export default function Connectionspt(): JSX.Element {
                                     }
                                     return (
                                         <button
-                                            disabled={val.date === selectedDate}
-                                            onClick={() => {
-                                                const game = val.game;
+                                            disabled={val === selectedDate}
+                                            onClick={async () => {
+                                                const connection = await supabase.from('connections')
+                                                    .select('*').eq('id',date).single()
+                                                const game = selectToGame(connection.data!);
                                                 setFirebaseWords(game);
                                                 setGame(getScrambledWordsFromGame(game));
                                                 setNumberOfGuessesLeft(4);
                                                 setAnswers([]);
-                                                setSelectedDate(val.date);
+                                                setSelectedDate(val);
                                                 setGuessesMade([]);
                                                 setSelectedWords([]);
                                             }}
-                                            key={val.date.toString()}
+                                            key={val.toString()}
                                             style={{ marginTop: "12px" }}
                                             className="connectionButton"
                                         >
@@ -752,7 +723,7 @@ function BotaoAtivarNotificacoes(props:{ trocarViewFunc: (() => void) | null; })
             className="connectionButton"
             onClick={(ev) => {
                 animateButton(AnimationTypes.Click, ev.currentTarget);
-                activateNotifications(window);
+                //TODO: implementar notificações
             }}
             >
             Ativar notificações
@@ -828,7 +799,7 @@ function ScriptInserirConnections(
     const [temVirgula, setTemVirgula] = useState(true);
     const [customDate, setCustomDate] = useState<string>("");
 
-    const firebaseWordsBuilder = (): FirebaseWords => {
+    const firebaseWordsBuilder = (): WordCategories => {
         yellowWords.title = yellowWords.title.trim();
         if (yellowWords.title.endsWith("-")) {
             yellowWords.title = yellowWords.title
@@ -853,12 +824,13 @@ function ScriptInserirConnections(
                 .slice(0, greenWords.title.length - 1)
                 .trim();
         }
+        const displayName = getUserDisplayName(props.martinho)
         return {
             yellow: yellowWords,
             blue: blueWords,
             green: greenWords,
             purple: purpleWords,
-            author: props.martinho.displayName ?? "Martinho"
+            author: displayName === "Unknown User" ? "Martinho" : displayName
         };
     };
 
@@ -886,55 +858,44 @@ function ScriptInserirConnections(
             return;
         }
 
-        if (myFirebase.userIsMartinho(props.martinho.uid)) {
+        if (userIsMartinho(props.martinho.id)) {
             let cdate = customDate;
             if (cdate.length !== 10) {
-                const words = await getLatestConnection();
-                words.dateObj.setDate(words.dateObj.getDate() + 7);
-                cdate = dateToMyString(words.dateObj, true);
+                const words = await supabase.from('connections')
+                    .select('id').order('id', { ascending: false }).limit(1).single();
+                const dateObj = stringDateToDate(words.data!.id!);
+                dateObj.setDate(dateObj.getDate() + 7);
+                cdate = dateToMyString(dateObj, true);
             }
 
             const data = firebaseWordsBuilder();
-            await setDoc(
-                doc(myFirebase.db, "connections", cdate).withConverter(
-                    firebaseWordsConverter
-                ),
-                data
-            )
-                .then(() => setErrorString(`Sucesso Data - ${cdate}`))
-                .catch((err) => setErrorString(err.toString()));
+            const insert = await supabase.from('connections')
+                .insert({
+                    id: cdate,
+                    yellow_words: data.yellow.words.join("||"),
+                    blue_words: data.blue.words.join("||"),
+                    green_words: data.green.words.join("||"),
+                    purple_words: data.purple.words.join("||"),
+                    yellow_title: data.yellow.title,
+                    blue_title: data.blue.title,
+                    green_title: data.green.title,
+                    purple_title: data.purple.title,
+                    author: data.author,
+                });
+            if (insert.error) {
+                console.log("Error inserting data:", insert.error);
+                setErrorString(insert.error.message);
+                return;
+            } else {
+                setErrorString(`Sucesso Data - ${cdate}`);
+                console.log("oi",errorString)
+            }
         }
     };
     const newDateFromArray = (arr: number[]): Date =>
         new Date(arr[0], arr[1] - 1, arr[2]);
     const stringDateToDate = (date: string): Date =>
         newDateFromArray(date.split("-").map((val) => parseInt(val)));
-    const getLatestConnection = async (): Promise<FirebaseWordsWithDate> => {
-        const connectionsCol = collection(
-            myFirebase.db,
-            "connections"
-        ).withConverter(firebaseWordsConverter);
-        const q = query(connectionsCol, orderBy(documentId()));
-        const qsnapshot = await getDocs(q);
-        let arr: FirebaseWordsWithDate[] = [];
-        qsnapshot.forEach((val) => {
-            if (val.id.indexOf("-") >= 0) {
-                arr.push({ dateObj: stringDateToDate(val.id), data: val.data() });
-            }
-        });
-        arr.sort((a, b) => {
-            return b.dateObj.getTime() - a.dateObj.getTime();
-        });
-        arr = arr
-            .filter((val) => !Number.isNaN(val.dateObj))
-            .filter((_val, index) => index === 0);
-        const date = arr[0].dateObj;
-        date.setDate(date.getDate());
-        return {
-            data: arr[0].data,
-            dateObj: date,
-        };
-    };
 
     const teste = async () => {
         console.log(customDate);
@@ -999,7 +960,7 @@ function ScriptInserirConnections(
                                         words: ev.target.value
                                             .split(temVirgula ? "," : " ")
                                             .filter((str) => str.length > 0)
-                                            .map((str) => str.trim()),
+                                            //.map((str) => str.trim()),
                                     });
                                 }}
                             ></input>

@@ -1,175 +1,36 @@
-import { /*createUserWithEmailAndPassword, signInWithEmailAndPassword,*/ signInWithPopup, signOut, UserCredential, GithubAuthProvider, updateProfile } from 'firebase/auth';
+import supabase from '../supabase/supabase';
+import { Session } from '@supabase/supabase-js';
 import './Login.css'
-import 'firebaseui/dist/firebaseui.css'
 import { useEffect, useState } from 'react';
-import { myFirebase } from '../firebase/firebase';
-
-const githubProvider = new GithubAuthProvider();
-
-type EmptyFunction<T> = (result:T) =>void;
-
-interface PropsLoginComponent {
-    onSuccessfulLogin: EmptyFunction<UserCredential>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onUnsuccessfulLogin: EmptyFunction<any>,
-}
-
-function EmailPasswordLoginComponent(): JSX.Element {
-    const [isCriarConta, setIsCriarConta] = useState(false)
-    const [password, setPassword] = useState('')
-    const [email, setEmail] = useState('')
-    const [displayName, setDisplayName] = useState('')
-    /*const criarContaFn = () => {
-        createUserWithEmailAndPassword(myFirebase.auth, email, password)
-            .then((userCredential) => {
-                console.log("created account", userCredential)
-            })
-            .catch((error) => {
-                console.log("error creating account ", error)
-                console.log(error.message, error.code)
-            });
-    }
-
-    const loginFn = () => {
-        signInWithEmailAndPassword(myFirebase.auth, email, password)
-            .then((userCredential) => {
-                console.log("signed in", userCredential)
-            })
-            .catch((error) => {
-                console.log("error signing in ", error)
-                console.log(error.message, error.code)
-            });
-    }*/
-
-    return (<fieldset>
-        <legend>{LoginToBeUsedEnum.EmailPassword} Login</legend>
-        <p onClick={()=>setIsCriarConta(!isCriarConta)} style={{cursor:'pointer'}}>
-            {isCriarConta ? 'Criar conta' : 'Login'}
-        </p>
-        <button onClick={()=>console.log(password, email, isCriarConta)}>teste state</button>
-        <div>
-            Display name: <input value={displayName} type='text' onChange={(e)=>setDisplayName(e.target.value)}/>
-            Email: <input value={email} type='text' onChange={(e)=>setEmail(e.target.value)}/>
-            Password: <input value={password} type='password' onChange={(e)=>setPassword(e.target.value)}/> 
-            {/*<button onClick={() => isCriarConta ? criarContaFn() : loginFn()}>Submeter</button>*/}
-            
-        </div> 
-    </fieldset>)
-
-}
-
-function GithubLoginComponent(props:Readonly<PropsLoginComponent>): JSX.Element {
-    const login = () => {
-        console.log("boas")
-            signInWithPopup(myFirebase.auth, githubProvider)
-            .then((result) => {
-                console.log(result)
-                // This gives you a GitHub Access Token. You can use it to access the GitHub API.
-                const credential = GithubAuthProvider.credentialFromResult(result);
-                const token = credential!.accessToken;
-                const user = result.user;
-                console.log(token, user)
-                props.onSuccessfulLogin(result);
-            }).catch((error) => {
-                
-                // Handle Errors here.
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                // The email of the user's account used.
-                const email = error.customData.email;
-                // The AuthCredential type that was used.
-                const credential = GithubAuthProvider.credentialFromError(error);
-                console.log(errorCode, errorMessage, email, credential)
-                props.onUnsuccessfulLogin(error)
-            });
-    }
-
-    return (
-        <fieldset>
-            <legend>{LoginToBeUsedEnum.Github} Login</legend>
-            <button disabled={myFirebase.auth.currentUser !== null} onClick={()=>{
-                login()
-            }}>GITHUB LOGIN</button>
-        </fieldset>
-    )
-}
-
-enum LoginToBeUsedEnum {
-    EmailPassword = 'Email & Password',
-    Github = 'Github',
-}
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 export default function Login(): JSX.Element {
-    const [loginToBeUsed, setLoginToBeUsed] = useState<LoginToBeUsedEnum>(LoginToBeUsedEnum.Github)
-    const [isSuccessfulLogin, setIsSuccessfulLogin] = useState<{isSuccess?: boolean, message?: string}>({})
-    const [displayName, setDisplayName] = useState('')
     
-    const updateUserDisplayName = () => {
-        updateProfile(myFirebase.auth.currentUser!,{displayName:displayName})
-        .then(()=>{
-            const div = document.getElementById("resultDiv");
-            if (div !== null)
-                div.innerHTML = div?.innerHTML + "<br>Sucesso a updatar";
+    const [session, setSession] = useState<Session | null>(null)
+    useEffect(() => {
+        supabase.auth.getSession().then((data)=>{
+            setSession(data.data.session)
         })
-        .catch((err)=>{
-            console.error(err)
-            const div = document.getElementById("resultDiv");
-            if (div !== null)
-                div.innerHTML = div?.innerHTML + "<br>Erro a updatar, ver consola";
+        const { data: { subscription }, } = supabase.auth.onAuthStateChange((_event, sessionRecv) => {
+            setSession(sessionRecv)
         })
-    }
-    const determineLoginComponentToBeUsed = () => {
-        switch(loginToBeUsed) {
-            case LoginToBeUsedEnum.EmailPassword: return (<EmailPasswordLoginComponent/>)
-            case LoginToBeUsedEnum.Github: return (<GithubLoginComponent onSuccessfulLogin={()=>setIsSuccessfulLogin({isSuccess:true})} onUnsuccessfulLogin={(error)=>setIsSuccessfulLogin({isSuccess: false, message:`${error.code} - ${error!.message}`})}/>)
-        }
-    }
-
-    useEffect(()=>{
-        console.log(myFirebase.auth.currentUser)
-        if (myFirebase.auth.currentUser !== null)
-            setIsSuccessfulLogin({isSuccess:true})
-    },[])
+        return () => subscription.unsubscribe()
+    }, [])
 
     return (<>
-        <fieldset>
-            <legend>Select login type</legend>
-            {Object.values(LoginToBeUsedEnum).map(login => {
-                return (
-                    <div key={login}>
-                        <input onChange={()=>{setLoginToBeUsed(login)}} checked={login === loginToBeUsed} type='radio' id={login} key={login} name="login_type" value={login}/>
-                        <label htmlFor={login}>{login}</label>
-                    </div>
-                )
-            })}
-        </fieldset>
-        {determineLoginComponentToBeUsed()}
-        <br></br>
-        {
-            myFirebase.auth.currentUser !== null ? <button onClick={()=>{
-                signOut(myFirebase.auth).then(()=>setIsSuccessfulLogin({}))
-            }}>LOGOUT</button> : null
-        }
-        <button onClick={()=>{
-            console.log(myFirebase.auth.currentUser)
-            console.log(loginToBeUsed)
-            console.log(isSuccessfulLogin)
-        }}>teste.</button>
-        {
-            isSuccessfulLogin.isSuccess === undefined ? 
-                null
-                :
-                <div id="resultDiv">
-                    <h4>{isSuccessfulLogin.isSuccess ? 'Login com successo' : 'Login sem sucesso'}</h4>
-                    {isSuccessfulLogin.isSuccess === false ? <p>{isSuccessfulLogin.message}</p> : null}
-                    {isSuccessfulLogin.isSuccess ?(
-                        <>
-                        Display name: <input value={displayName} type='text' onChange={(e)=>setDisplayName(e.target.value)}/><br></br>
-                        <button onClick={()=>updateUserDisplayName()}>Update Display Name</button>
-                        </>
-                    ) : null}
-                </div>
-        }
+        {!session ? (
+            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['github', 'discord']} />
+        ) : (
+            <div>
+                <div>Logged in!</div>
+                <button onClick={() => {
+                supabase.auth.signOut().then(() => {
+                    setSession(null);
+                });
+                }}>Logout</button>
+            </div>
+        )}
     </>)
 }
 

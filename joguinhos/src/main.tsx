@@ -1,5 +1,5 @@
 import { StrictMode } from 'react'
-import { createRoot, hydrateRoot } from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 import './index.css'
 import Joguinhos from './Joguinhos.tsx'
 import { createHashRouter, RouterProvider } from 'react-router-dom'
@@ -20,13 +20,7 @@ const router = createHashRouter([
     element: <Login/>
   }
 ])
-const rootElement = document.getElementById("root");
-
-if (rootElement?.hasChildNodes) {
-  hydrateRoot(rootElement, <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>,)
-} else createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />
   </StrictMode>,
