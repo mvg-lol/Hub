@@ -1,3 +1,6 @@
+Need to install the following packages:
+supabase@2.33.7
+Ok to proceed? (y) 
 export type Json =
   | string
   | number
@@ -14,22 +17,46 @@ export type Database = {
   }
   public: {
     Tables: {
-      codenames: {
+      connections: {
         Row: {
-          created_at: string
-          id: number
+          author: string | null
+          blue_title: string | null
+          blue_words: string | null
+          green_title: string | null
+          green_words: string | null
+          id: string
+          purple_title: string | null
+          purple_words: string | null
+          yellow_title: string | null
+          yellow_words: string | null
         }
         Insert: {
-          created_at?: string
-          id?: number
+          author?: string | null
+          blue_title?: string | null
+          blue_words?: string | null
+          green_title?: string | null
+          green_words?: string | null
+          id: string
+          purple_title?: string | null
+          purple_words?: string | null
+          yellow_title?: string | null
+          yellow_words?: string | null
         }
         Update: {
-          created_at?: string
-          id?: number
+          author?: string | null
+          blue_title?: string | null
+          blue_words?: string | null
+          green_title?: string | null
+          green_words?: string | null
+          id?: string
+          purple_title?: string | null
+          purple_words?: string | null
+          yellow_title?: string | null
+          yellow_words?: string | null
         }
         Relationships: []
       }
-      connections: {
+      connections_duplicate: {
         Row: {
           author: string | null
           blue_title: string | null
