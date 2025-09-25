@@ -20,7 +20,12 @@ export default function Login(): JSX.Element {
 
     return (<>
         {!session ? (
-            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={['github', 'discord']} />
+            <Auth 
+                supabaseClient={supabase} 
+                appearance={{ theme: ThemeSupa }} 
+                providers={['github', 'discord']} 
+                redirectTo='https://mvg.lol/joguinhos/#/login'
+            />
         ) : (
             <div>
                 <div>Logged in!</div>
