@@ -1,7 +1,15 @@
 import { createClient, User } from '@supabase/supabase-js'
 import { Database } from '../database.types'
 const supabaseUrl = 'https://ayigaknwmqjtqrsfcvvw.supabase.co'
-const supabase = createClient<Database>(supabaseUrl, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aWdha253bXFqdHFyc2ZjdnZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzNjgxNzAsImV4cCI6MjA2ODk0NDE3MH0.dbM9RoHwMlyDStqQIRC7GaB26soVCf6Y-xrnWbUlpHQ")
+const supabase = createClient<Database>(
+    supabaseUrl, 
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF5aWdha253bXFqdHFyc2ZjdnZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzNjgxNzAsImV4cCI6MjA2ODk0NDE3MH0.dbM9RoHwMlyDStqQIRC7GaB26soVCf6Y-xrnWbUlpHQ",
+    {
+        auth: {
+            
+        }
+    }
+)
 const userIsMartinho = (uid: string) => Object.values(UIDsMartinho).filter(uidE => uidE === uid).length > 0
 export enum UIDsMartinho {
     Github = 'bd6ace80-9173-432e-b1b6-d6512b0d2386',

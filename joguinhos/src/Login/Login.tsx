@@ -19,6 +19,7 @@ export default function Login(): JSX.Element {
     }, [])
 
     return (<>
+    <h1>⛔️⚠️ Login NAO ESTA A FUNCIONAR BEM!!!!!!!!! EM CONSTRUCAO ⚠️⛔️</h1>
         {!session ? (
             <Auth 
                 supabaseClient={supabase} 
