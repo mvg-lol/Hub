@@ -8,6 +8,10 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 export default function Login(): JSX.Element {
     
     const [session, setSession] = useState<Session | null>(null)
+    
+    const searchParams = new URLSearchParams( location.toString().split("/login#")[1]);
+    console.log("searchParams:", searchParams);
+    
     useEffect(() => {
         supabase.auth.getSession().then((data)=>{
             setSession(data.data.session)
@@ -25,7 +29,7 @@ export default function Login(): JSX.Element {
                 supabaseClient={supabase} 
                 appearance={{ theme: ThemeSupa }} 
                 providers={['github', 'discord']} 
-                redirectTo='https://mvg.lol/joguinhos/#/login'
+                socialLayout="horizontal"
             />
         ) : (
             <div>

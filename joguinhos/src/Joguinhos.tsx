@@ -1,7 +1,8 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import Connectionspt from "./Connections/Connections";
 import Three from "./Threejs/Threejs";
 import Login from "./Login/Login";
+import supabase from "./supabase/supabase";
 
 enum Game {
     Login = 'login',
@@ -12,7 +13,13 @@ enum Game {
 export default function Joguinhos(): JSX.Element {
     const { game } = useParams<{ game?: string }>();
     console.log("teste joguinhos", game);
-
+    supabase.auth.getSession().then((data) => {
+        console.log("session", data);
+        console.log("is session null?", data.data.session === null || data.data.session === undefined);
+    });
+    const [searchParams] = useSearchParams();
+    console.log("searchParams:", Object.fromEntries(searchParams.entries()));
+    console.log("location:", location);
     switch (game) {
         case Game.Connections:
             return <Connectionspt />;
