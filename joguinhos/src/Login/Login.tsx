@@ -30,6 +30,7 @@ export default function Login(): JSX.Element {
                 appearance={{ theme: ThemeSupa }} 
                 providers={['github', 'discord']} 
                 socialLayout="horizontal"
+                redirectTo='https://mvg.lol/joguinhos/#'
             />
         ) : (
             <div>
