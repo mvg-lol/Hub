@@ -2,8 +2,6 @@ import supabase from '../supabase/supabase';
 import { Session } from '@supabase/supabase-js';
 import './Login.css'
 import { useEffect, useState } from 'react';
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
 
 export default function Login(): JSX.Element {
     
@@ -25,12 +23,17 @@ export default function Login(): JSX.Element {
     return (<>
     <h1>⛔️⚠️ Login NAO ESTA A FUNCIONAR BEM!!!!!!!!! EM CONSTRUCAO ⚠️⛔️</h1>
         {!session ? (
-            <Auth 
-                supabaseClient={supabase} 
-                appearance={{ theme: ThemeSupa }} 
-                providers={['github', 'discord']} 
-                socialLayout="horizontal"
-            />
+            
+            <div>
+                <div>Not logged in</div>
+                <button onClick={() => {
+                    supabase.auth.signInWithOAuth({
+                        provider: 'github',
+                    }).then((data) => {
+                        console.log("login data:", data);
+                    });
+                }}>Login with GitHub</button>
+            </div>
         ) : (
             <div>
                 <div>Logged in!</div>
