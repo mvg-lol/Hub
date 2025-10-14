@@ -10,7 +10,7 @@ export default function Login(): JSX.Element {
     const [session, setSession] = useState<Session | null>(null)
     
     const searchParams = new URLSearchParams( location.toString().split("/login#")[1]);
-    console.log("searchParams:", searchParams);
+
     if (searchParams.get('access_token') && searchParams.get('refresh_token')) {
         const access_token = searchParams.get('access_token') as string;
         const refresh_token = searchParams.get('refresh_token') as string;
@@ -20,6 +20,7 @@ export default function Login(): JSX.Element {
             } else {
                 console.log("Session set successfully:", data);
                 setSession(data.session);
+                location.replace('https://mvg.lol/joguinhos/#/login');
             }
         });
     }
@@ -34,7 +35,6 @@ export default function Login(): JSX.Element {
     }, [])
 
     return (<>
-    <h1>⛔️⚠️ Login NAO ESTA A FUNCIONAR BEM!!!!!!!!! EM CONSTRUCAO ⚠️⛔️</h1>
         {!session ? (
             <Auth 
                 supabaseClient={supabase} 
